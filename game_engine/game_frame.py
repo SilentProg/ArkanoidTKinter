@@ -183,54 +183,6 @@ class GameBoard(CTkFrame):
                 self.loadItems(self.level['bricks'], self.bricks)
                 self.loadItems(self.level['walls'], self.walls)
 
-                # brick_keys = list(self.level['bricks'].keys())
-                # print(type(brick_keys))
-                # for i in range(0, len(brick_keys)):
-                #     key = brick_keys[i]
-                #     print(self.level['bricks'][key])
-                #     if self.level['bricks'][key] == {}:
-                #         continue
-                #     x1 = int(self.level['bricks'][key]['x1'])
-                #     y1 = int(self.level['bricks'][key]['y1'])
-                #     x2 = int(self.level['bricks'][key]['x2'])
-                #     y2 = int(self.level['bricks'][key]['y2'])
-                #     fill_color = self.level['bricks'][key]['fill']
-                #     id_brick = self.canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color)
-                #     self.level['bricks'].pop(key)
-                #     self.level['bricks'][str(id_brick)] = {
-                #         'x1': x1,
-                #         'y1': y1,
-                #         'x2': x2,
-                #         'y2': y2,
-                #         'fill': fill_color
-                #     }
-                #     self.bricks.append(id_brick)
-                #
-                # wall_keys = list(self.level['walls'].keys())
-                #
-                # for i in range(0, len(wall_keys)):
-                #     key = wall_keys[i]
-                #     print(self.level['walls'][key])
-                #     if self.level['walls'][key] == {}:
-                #         continue
-                #     x1 = int(self.level['walls'][key]['x1'])
-                #     y1 = int(self.level['walls'][key]['y1'])
-                #     x2 = int(self.level['walls'][key]['x2'])
-                #     y2 = int(self.level['walls'][key]['y2'])
-                #     fill_color = self.level['walls'][key]['fill']
-                #     outline_color = self.level['walls'][key]['outline']
-                #     id_wall = self.canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline=outline_color)
-                #     self.level['walls'].pop(key)
-                #     self.level['walls'][str(id_wall)] = {
-                #         'x1': x1,
-                #         'y1': y1,
-                #         'x2': x2,
-                #         'y2': y2,
-                #         'fill': fill_color,
-                #         'outline': outline_color
-                #     }
-                #     self.walls.append(id_wall)
-
         except FileNotFoundError:
             self.brick_w, self.brick_h = self.size_w / self.column, self.size_h * self.bricks_zone / self.string
             self.bricks = []
