@@ -89,9 +89,9 @@ class LevelInfoFrame(CTkFrame):
 
 
 class GameBoard(CTkFrame):
-    def __init__(self, master, show_ui, level_name, **kwargs):
+    def __init__(self, master, show_ui, level_name, pause: bool = False, **kwargs):
         super().__init__(master, **kwargs)
-        self.level = {}
+        self.level: {} = None
         self.level_path = level_name
         self.brick_h = None
         self.brick_w = None
@@ -121,15 +121,12 @@ class GameBoard(CTkFrame):
         self.hit_sound = pygame.mixer.Sound("game_engine/assets/sounds/hit_received.wav")
         self.level_failed_sound = pygame.mixer.Sound("game_engine/assets/sounds/level_failed.wav")
         self.level_confirm_sound = pygame.mixer.Sound("game_engine/assets/sounds/level_confirm.wav")
-        self.pause = False
+        self.pause = pause
         self.ball_x, self.ball_y = self.size_w // 2, self.size_h // 2
         self.ball_vx, self.ball_vy = -5, -5
         self.showUi = show_ui
         self.initUI()
         self.initGame()
-
-        print(self.size_w)
-        print(self.size_h)
 
     def togglePause(self):
         self.pause = not self.pause
@@ -173,28 +170,38 @@ class GameBoard(CTkFrame):
                                                      fill='white',
                                                      tags='carriage')
 
-        try:
-            with open(self.level_path, "r") as json_file:
-                self.level = json.load(json_file)
+        def load():
+            self.hp = int(self.level['hp'])
+            self.level_info_frame.setHp(self.hp)
+            self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.level['carriage']['color'])
+            self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.level['ball']['color'])
 
-                self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.level['carriage']['color'])
-                self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.level['ball']['color'])
+            self.loadItems(self.level['bricks'], self.bricks)
+            self.loadItems(self.level['walls'], self.walls)
 
-                self.loadItems(self.level['bricks'], self.bricks)
-                self.loadItems(self.level['walls'], self.walls)
-
-        except FileNotFoundError:
-            self.brick_w, self.brick_h = self.size_w / self.column, self.size_h * self.bricks_zone / self.string
-            self.bricks = []
-            for i in range(self.string):
-                for j in range(self.column):
-                    brick_x, brick_y = j * self.brick_w, i * self.brick_h
-                    colors = choice(['red', 'orange', 'yellow', 'green', 'blue', 'aqua', 'violet'])
-                    self.bricks.append(
-                        self.canvas.create_rectangle(brick_x, brick_y, brick_x + self.brick_w,
-                                                     brick_y + self.brick_h,
-                                                     fill=colors))
-            print('File not found')
+        if self.level:
+            load()
+        elif self.level_path:
+            try:
+                with open(self.level_path, "r") as json_file:
+                    self.level = json.load(json_file)
+                    load()
+            except FileNotFoundError:
+                print('File not found')
+        else:
+            if self.level:
+                return
+            self.level = {
+                "hp": 1,
+                "ball": {
+                    "color": "white"
+                },
+                "carriage": {
+                    "color": "white"
+                },
+                "bricks": {},
+                "walls": {}
+            }
 
     def loadItems(self, items: {}, array):
         items_keys = list(items.keys())
@@ -228,7 +235,8 @@ class GameBoard(CTkFrame):
         return self.canvas
 
     def initUI(self):
-        self.level_info_frame = LevelInfoFrame(self, "1", self.hp, self.togglePause, self.restart, width=self.size_w - 15,
+        self.level_info_frame = LevelInfoFrame(self, "1", self.hp, self.togglePause, self.restart,
+                                               width=self.size_w - 15,
                                                height=self.info_frame_size_h - 10)
         if self.showUi:
             self.level_info_frame.pack(padx=5, pady=5)
@@ -248,6 +256,8 @@ class GameBoard(CTkFrame):
         self.canvas.bind('<Motion>', self.motion)
 
     def ball_movement(self):
+        print("move")
+        print(self.level['bricks'])
         self.ball_x, self.ball_y = self.ball_x + self.ball_vx, self.ball_y + self.ball_vy
         self.canvas.coords(self.ball, self.ball_x - self.radius, self.ball_y - self.radius, self.ball_x + self.radius,
                            self.ball_y + self.radius)
@@ -338,6 +348,8 @@ class GameBoard(CTkFrame):
         self.level_info_frame.setScore(self.points)
 
     def control(self, event):
+        if self.pause:
+            return
         x1, y1, x2, y2 = self.canvas.coords(self.carriage)
         if event.keysym == 'Left' and x1 + 20 >= 0:
             self.carriage_x -= 10
@@ -349,6 +361,8 @@ class GameBoard(CTkFrame):
                                self.carriage_x + self.carriage_w // 2, self.size_h - self.carriage_h)
 
     def motion(self, event):
+        if self.pause:
+            return
         x, y = event.x, event.y
         self.carriage_x = x
         x1 = self.carriage_x - self.carriage_w // 2

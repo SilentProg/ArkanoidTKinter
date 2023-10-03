@@ -1,9 +1,13 @@
+from tkinter.simpledialog import askstring
+
+import customtkinter
 from PIL import Image
 from customtkinter import CTkFrame, LEFT, CTkButton, CTkLabel, TOP, CTkFont, X, CTkEntry, StringVar, RIGHT, BOTH, Y, \
     CTkInputDialog, CTkOptionMenu
 from tkinter import Canvas, Menu, CURRENT
 from game_engine.const import Brick
 from tkinter.colorchooser import askcolor
+from tkinter.messagebox import showwarning
 from game_engine.game_frame import GameBoard
 import json
 
@@ -24,8 +28,10 @@ class LBControlPanel(CTkFrame):
         self.wall_width = StringVar(value='100')
         self.wall_height = StringVar(value='40')
         self.button_try_reset_str = StringVar(value='Try')
+        self.option_menu_str = StringVar(value=board.hp)
         self.wall_picture = Image.open('game_engine\\assets\\icons\\hp.png')
         self.level: {} = board.level
+        self.level_const: {} = board.level
         self.board = board
         self.canvas = board.getCanvas()
         self.initUI()
@@ -105,6 +111,12 @@ class LBControlPanel(CTkFrame):
                                                  command=self.chooseCarriageColor)
         button_choose_carriage_color.pack(fill=X, padx=5, pady=5)
 
+        frame_hp = CTkFrame(self)
+        frame_hp.pack(fill=X, padx=5, pady=5)
+
+        option_menu_hp = CTkOptionMenu(frame_hp, values=["HP: 1", "HP: 2", "HP: 3"], variable=self.option_menu_str)
+        option_menu_hp.pack(fill=X, padx=5, pady=5)
+
         frame_control_buttons = CTkFrame(self)
         frame_control_buttons.pack(fill=X, padx=5, pady=5)
 
@@ -119,14 +131,27 @@ class LBControlPanel(CTkFrame):
         self.context_menu.add_command(label='Delete', command=self.deleteObj)
         self.canvas.bind("<Button-3>", self.show_context_menu)
 
+        def validate_input(line):
+            if line == "" or line.isdigit():
+                return True
+            else:
+                return False
+
+        validate_func = self.register(validate_input)
+        entry_wall_width.configure(validate="key", validatecommand=(validate_func, "%P"))
+        entry_wall_height.configure(validate="key", validatecommand=(validate_func, "%P"))
+
     def getLevel(self) -> {}:
         return self.level
 
     def tryReset(self):
+
         if self.button_try_reset_str.get() == 'Try':
+            self.level = self.level_const
             self.button_try_reset_str.set('Reset')
             self.board.togglePause()
         else:
+            self.level_const = self.level
             self.button_try_reset_str.set('Try')
             self.board.restart()
             self.board.togglePause()
@@ -151,11 +176,12 @@ class LBControlPanel(CTkFrame):
 
     def saveLevel(self):
         self.updateAllObjs()
-
-        dialog = CTkInputDialog(text="Type the level title:", title="Save level")
+        file_name = askstring("Level save", "Enter level name:", parent=self.master)
+        # dialog = CTkInputDialog(text="Type the level title:", title="Save level")
         json_string = json.dumps(self.level, indent=4)
-        with open("levels/{}.json".format(dialog.get_input()), "w") as json_file:
-            json_file.write(json_string)
+        if file_name:
+            with open("levels/{}.json".format(file_name), "w") as json_file:
+                json_file.write(json_string)
 
     def addBrick(self):
         print("block_added")
@@ -163,6 +189,7 @@ class LBControlPanel(CTkFrame):
         brick_h = 40
         x1, y1, x2, y2 = self.calcPos(brick_w, brick_h)
         id_brick = self.canvas.create_rectangle(x1, y1, x2, y2, fill=self.current_color)
+        self.board.bricks.append(id_brick)
         self.level['bricks'][str(id_brick)] = {
             'x1': x1,
             'y1': y1,
@@ -172,12 +199,15 @@ class LBControlPanel(CTkFrame):
         }
 
     def addWall(self):
+        if not self.wall_height.get() or not self.wall_width.get():
+            showwarning("Warning", "Width or height incorrect!")
+            return
         print("wall_added")
-
         wall_w = int(self.wall_width.get())
         wall_h = int(self.wall_height.get())
         x1, y1, x2, y2 = self.calcPos(wall_w, wall_h)
         id_wall = self.canvas.create_rectangle(x1, y1, x2, y2, fill='#561243', outline='#a2227e')
+        self.board.walls.append(id_wall)
         self.level['walls'][str(id_wall)] = {
             'x1': x1,
             'y1': y1,
@@ -196,21 +226,26 @@ class LBControlPanel(CTkFrame):
 
     def chooseColor(self):
         self.current_color = askcolor(title="Choose color for brick")[1]
-        self.frame_current_color.configure(fg_color=self.current_color)
+        if self.current_color:
+            self.frame_current_color.configure(fg_color=self.current_color)
 
     def chooseBallColor(self):
         self.ball_color = askcolor(title="Choose color for brick")[1]
-        self.frame_color_ball.configure(fg_color=self.ball_color)
-        self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.ball_color)
-        self.level['ball']['color'] = str(self.ball_color)
+        if self.ball_color:
+            self.frame_color_ball.configure(fg_color=self.ball_color)
+            self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.ball_color)
+            self.level['ball']['color'] = str(self.ball_color)
 
     def chooseCarriageColor(self):
         self.carriage_color = askcolor(title="Choose color for brick")[1]
-        self.frame_color_carriage.configure(fg_color=self.carriage_color)
-        self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.carriage_color)
-        self.level['carriage']['color'] = str(self.carriage_color)
+        if self.carriage_color:
+            self.frame_color_carriage.configure(fg_color=self.carriage_color)
+            self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.carriage_color)
+            self.level['carriage']['color'] = str(self.carriage_color)
 
     def updateObj(self, current_obj):
+        if not current_obj:
+            return
         print("Current obj: {}".format(current_obj))
         print("Level obj: {}".format(self.level))
         x1, y1, x2, y2 = self.canvas.coords(current_obj)
@@ -245,6 +280,13 @@ class LBControlPanel(CTkFrame):
             print(self.level['walls'])
 
     def updateAllObjs(self):
+        hp = self.option_menu_str.get()
+        if hp == "HP: 1":
+            self.level['hp'] = 1
+        elif hp == "HP: 2":
+            self.level['hp'] = 1
+        elif hp == "HP: 3":
+            self.level['hp'] = 3
         self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.carriage_color)
         self.level['carriage']['color'] = str(self.carriage_color)
         self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.ball_color)
@@ -277,7 +319,7 @@ class LBControlPanel(CTkFrame):
 
 
 class LevelBuilder(CTkFrame):
-    def __init__(self, master, **kwargs):
+    def __init__(self, master, level_path: str = None, **kwargs):
         super().__init__(master, **kwargs)
         self.canvas: Canvas = Canvas(self)
         self.current_object = None
@@ -285,6 +327,7 @@ class LevelBuilder(CTkFrame):
         self.current_object_h = 0
         self.start_x = None
         self.start_y = None
+        self.level_path = level_path
         self.object_center_x = None
         self.object_center_y = None
 
@@ -292,8 +335,7 @@ class LevelBuilder(CTkFrame):
         self.initUI()
 
     def initUI(self):
-        game_board = GameBoard(self, False, 'levels/level_8.json', width=1080, height=720)
-        game_board.togglePause()
+        game_board = GameBoard(self, False, self.level_path, True, width=1080, height=720)
 
         self.canvas = game_board.getCanvas()
         self.control_panel = LBControlPanel(self, game_board, width=190, height=self.master.winfo_height() - 10)

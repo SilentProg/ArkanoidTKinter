@@ -1,6 +1,8 @@
 from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, BOTH
 from tkinter import Menu, Canvas
+from tkinter.filedialog import askopenfilename
 from level_builder import LevelBuilder
+from tkinter.messagebox import askyesno as ConfirmDialog
 
 
 class App(CTk):
@@ -11,7 +13,6 @@ class App(CTk):
         self.app_height = 650
         self.initUI()
         self.initMainMenu()
-        self.newLevel()
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()
@@ -24,35 +25,63 @@ class App(CTk):
         self.title("Arkanoid | Level builder")
         self.resizable(False, False)
 
-
-
-
     def initMainMenu(self):
         menubar = Menu(self)
         self.config(menu=menubar)
 
         fileMenu = Menu(menubar, tearoff=0)
         levelMenu = Menu(menubar, tearoff=0)
-        controlMenu = Menu(menubar, tearoff=0)
+        # controlMenu = Menu(menubar, tearoff=0)
 
         levelMenu.add_command(label="Новий рівень", command=self.newLevel)
-        levelMenu.add_command(label="Завантажити рівень", command=self.onExit)
+        levelMenu.add_command(label="Завантажити рівень", command=self.loadLevel)
 
-        controlMenu.add_command(label="Блок")
-        controlMenu.add_command(label="Каретка")
-        controlMenu.add_command(label="Фон")
+        # controlMenu.add_command(label="Блок")
+        # controlMenu.add_command(label="Каретка")
+        # controlMenu.add_command(label="Фон")
 
         fileMenu.add_cascade(label="Рівень", menu=levelMenu)
-        fileMenu.add_cascade(label="Елементи керування", menu=controlMenu)
+        # fileMenu.add_cascade(label="Елементи керування", menu=controlMenu)
         fileMenu.add_command(label="Вихід", command=self.onExit)
         menubar.add_cascade(label="Файл", menu=fileMenu)
 
     def onExit(self):
-        self.quit()
+        answer = ConfirmDialog(title='Confirmation', message='Are you sure that you want to quit?')
+        if answer:
+            self.destroy()
 
     def newLevel(self):
-        self.current_page = LevelBuilder(self, width=self.app_width, height=self.app_height)
-        self.current_page.pack(fill=BOTH, expand=True)
+        def create():
+            self.current_page = LevelBuilder(self, width=self.app_width, height=self.app_height)
+            self.current_page.pack(fill=BOTH, expand=True)
+
+        if self.current_page:
+            answer = ConfirmDialog(title='Confirmation', message='Are you sure that you want to create new level?')
+            if answer:
+                self.current_page.destroy()
+                create()
+        else:
+            create()
+
+    def loadLevel(self):
+        import os
+
+        def load():
+            file_path = askopenfilename(title="Load level", initialdir="{}\\levels".format(os.getcwd()),
+                                        filetypes=(("Level files", "*.json"), ('All files', '*.*')))
+            if file_path:
+                self.current_page = LevelBuilder(self, file_path, width=self.app_width, height=self.app_height)
+                self.current_page.pack(fill=BOTH, expand=True)
+
+        if self.current_page:
+            answer = ConfirmDialog(title='Confirmation', message='Are you sure that you want to load level?')
+            if answer:
+                self.current_page.destroy()
+                load()
+        else:
+            load()
+
+
 def main():
     app = App()
     app.mainloop()
