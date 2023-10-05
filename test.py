@@ -68,34 +68,69 @@
 #
 # window.mainloop()
 
+# import tkinter as tk
+#
+#
+# def create_list(root, items):
+#     row = 0
+#     col = 0
+#
+#     for item in items:
+#         frame = tk.Frame(root, width=100, height=100, borderwidth=1, relief="solid")
+#         frame.grid(row=row, column=col, padx=5, pady=5)
+#         button = tk.Button(frame, text=item)
+#         button.pack(fill="both", expand=True)
+#
+#         col += 1
+#         if col > 3:
+#             col = 0
+#             row += 1
+#
+#
+# if __name__ == "__main__":
+#     root = tk.Tk()
+#     root.title("Список с кнопками")
+#
+#     items = ["Элемент 1", "Элемент 2", "Элемент 3", "Элемент 4",
+#              "Элемент 5", "Элемент 6", "Элемент 7", "Элемент 8",
+#              "Элемент 9", "Элемент 10", "Элемент 11", "Элемент 12"]
+#
+#     create_list(root, items)
+#
+#     root.mainloop()
+
 import tkinter as tk
+from tkinter import messagebox
 
 
-def create_list(root, items):
-    row = 0
-    col = 0
+def open_modal_window():
+    modal_window = tk.Toplevel(root)
+    modal_window.title("Модальное окно")
 
-    for item in items:
-        frame = tk.Frame(root, width=100, height=100, borderwidth=1, relief="solid")
-        frame.grid(row=row, column=col, padx=5, pady=5)
-        button = tk.Button(frame, text=item)
-        button.pack(fill="both", expand=True)
+    # Установить модальный режим для модального окна
+    modal_window.grab_set()
 
-        col += 1
-        if col > 3:
-            col = 0
-            row += 1
+    # Создать некоторый контент для модального окна
+    label = tk.Label(modal_window, text="Это модальное окно")
+    label.pack(padx=20, pady=20)
+
+    # Функция, которая будет вызываться при закрытии модального окна
+    def on_close():
+        modal_window.grab_release()
+        modal_window.destroy()
+
+    # Создать кнопку для закрытия модального окна
+    close_button = tk.Button(modal_window, text="Закрыть", command=on_close)
+    close_button.pack(pady=10)
 
 
 if __name__ == "__main__":
     root = tk.Tk()
-    root.title("Список с кнопками")
+    root.title("Главное окно")
 
-    items = ["Элемент 1", "Элемент 2", "Элемент 3", "Элемент 4",
-             "Элемент 5", "Элемент 6", "Элемент 7", "Элемент 8",
-             "Элемент 9", "Элемент 10", "Элемент 11", "Элемент 12"]
-
-    create_list(root, items)
+    # Создать кнопку для открытия модального окна
+    open_button = tk.Button(root, text="Открыть модальное окно", command=open_modal_window)
+    open_button.pack(padx=20, pady=20)
 
     root.mainloop()
 

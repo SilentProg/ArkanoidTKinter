@@ -1,20 +1,23 @@
-from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, BOTH
-from tkinter import Menu, Canvas
+from customtkinter import BOTH, CTkToplevel, CTkLabel, CTkButton
+from tkinter import Menu
 from tkinter.filedialog import askopenfilename
-from level_editor.level_builder import LevelBuilder
 from tkinter.messagebox import askyesno as ConfirmDialog
 
+from level_builder import LevelBuilder
 
-class LevelEditor(CTk):
+
+class LevelEditor(CTkToplevel):
     def __init__(self):
         super().__init__()
         self.current_page = None
         self.app_width = 1265
-        self.app_height = 650
+        self.app_height = 670
         self.initUI()
         self.initMainMenu()
 
     def initUI(self):
+        self.grab_set()
+
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
 
@@ -81,13 +84,9 @@ class LevelEditor(CTk):
         else:
             load()
 
-    def show(self):
-        self.mainloop()
-
-
 def main():
     app = LevelEditor()
-    app.show()
+    app.mainloop()
 
 
 if __name__ == '__main__':

@@ -1,14 +1,12 @@
 from tkinter.simpledialog import askstring
 
-import customtkinter
 from PIL import Image
-from customtkinter import CTkFrame, LEFT, CTkButton, CTkLabel, TOP, CTkFont, X, CTkEntry, StringVar, RIGHT, BOTH, Y, \
-    CTkInputDialog, CTkOptionMenu
+from customtkinter import CTkFrame, LEFT, CTkButton, CTkLabel, TOP, CTkFont, X, CTkEntry, StringVar, RIGHT, Y, \
+    CTkOptionMenu
 from tkinter import Canvas, Menu, CURRENT
-from game_engine.const import Brick
 from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showwarning
-from game_engine.game_frame import GameBoard
+from game_frame import GameBoard
 import json
 
 
@@ -29,7 +27,6 @@ class LBControlPanel(CTkFrame):
         self.wall_height = StringVar(value='40')
         self.button_try_reset_str = StringVar(value='Try')
         self.option_menu_str = StringVar(value=board.hp)
-        self.wall_picture = Image.open('game_engine\\assets\\icons\\hp.png')
         self.level: {} = board.level
         self.level_const: {} = board.level
         self.board = board
@@ -39,7 +36,6 @@ class LBControlPanel(CTkFrame):
     def initUI(self):
         frame_bricks = CTkFrame(self, width=self.winfo_reqwidth() - 10, height=200)
         frame_bricks.pack(fill=X, side=TOP, padx=5, pady=5)
-        # frame_bricks.place(x=5, y=5)
 
         label_list_colors = CTkLabel(frame_bricks, text="Choose color:", width=frame_bricks.winfo_reqwidth() - 10,
                                      font=self.font_small, corner_radius=50)

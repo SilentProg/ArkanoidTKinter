@@ -1,9 +1,8 @@
 import json
-
-from customtkinter import CTkFrame, CTkCanvas, CTkLabel, CTkFont, StringVar, CTkButton, CTkImage
+import os
+from customtkinter import CTkFrame, CTkLabel, CTkFont, CTkButton, CTkImage
 from tkinter import Canvas
-from PIL import Image, ImageTk
-from random import *
+from PIL import Image
 import pygame
 
 
@@ -19,11 +18,11 @@ class LevelInfoFrame(CTkFrame):
         self.togglePause = toggle_pause
         self.max_hp = hp
         self.hp_bar = []
-        self.hp_icon = Image.open('game_engine\\assets\\icons\\hp.png')
-        self.hp_broken_icon = Image.open('game_engine\\assets\\icons\\hp_broken.png')
+        self.hp_icon = Image.open('assets\\icons\\hp.png')
+        self.hp_broken_icon = Image.open('assets\\icons\\hp_broken.png')
         self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
         self.level_font = CTkFont(family="Helvetica", size=36, weight="bold")
-        self.menu_click_sound = pygame.mixer.Sound("game_engine/assets/sounds/menu_click.wav")
+        self.menu_click_sound = pygame.mixer.Sound("assets/sounds/menu_click.wav")
         self.initUI()
 
     def setHp(self, hp):
@@ -59,7 +58,7 @@ class LevelInfoFrame(CTkFrame):
         for image in self.hp_bar:
             image.destroy()
         self.hp_bar.clear()
-
+        print(os.getcwd())
         column = 4
         for i in range(self.hp):
             hp_image = CTkImage(dark_image=self.hp_icon, light_image=self.hp_icon, size=(50, 50))
@@ -118,9 +117,9 @@ class GameBoard(CTkFrame):
         self.bricks = []
         self.walls = []
         pygame.mixer.init()
-        self.hit_sound = pygame.mixer.Sound("game_engine/assets/sounds/hit_received.wav")
-        self.level_failed_sound = pygame.mixer.Sound("game_engine/assets/sounds/level_failed.wav")
-        self.level_confirm_sound = pygame.mixer.Sound("game_engine/assets/sounds/level_confirm.wav")
+        self.hit_sound = pygame.mixer.Sound("assets/sounds/hit_received.wav")
+        self.level_failed_sound = pygame.mixer.Sound("assets/sounds/level_failed.wav")
+        self.level_confirm_sound = pygame.mixer.Sound("assets/sounds/level_confirm.wav")
         self.pause = pause
         self.ball_x, self.ball_y = self.size_w // 2, self.size_h // 2
         self.ball_vx, self.ball_vy = -5, -5
