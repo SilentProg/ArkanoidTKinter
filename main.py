@@ -1,6 +1,11 @@
-from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, CTkFont, CTkToplevel
-from tkinter.messagebox import askyesno as ConfirmDialog
-from game_frame import GameBoard
+from functools import partial
+from tkinter import Frame
+
+from PIL import Image
+from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, CTkFont, CTkToplevel, LEFT, X, DISABLED, NORMAL, BOTH, \
+    CTkScrollableFrame, CTkImage, CTkSlider, CTkCheckBox, RIGHT
+from tkinter.messagebox import askyesno as confirmation
+from game_frame import GameBoard, Levels
 from level_editor import LevelEditor
 
 
@@ -8,7 +13,7 @@ class App(CTk):
     app_width = 1080
     app_height = 720
     menu_frame: CTkFrame = None
-    previous_menu_frame: CTkFrame = None
+    main_menu_frame: CTkFrame = None
     current_menu: CTkFrame = None
     game = -1
 
@@ -16,6 +21,7 @@ class App(CTk):
         super().__init__()
         self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
         self.initUI()
+        self.levels = Levels()
         self.initMainMenu()
 
     def initUI(self):
@@ -31,13 +37,6 @@ class App(CTk):
 
     def initMainMenu(self):
         menu_frame = self.__createMenuFrame()
-        # menu_frame_width = self.app_width // 4
-        # menu_frame_height = self.app_height // 2
-        # menu_frame_x = self.app_width // 2 - menu_frame_width // 2
-        # menu_frame_y = self.app_height // 2 - menu_frame_height // 2
-        # self.menu_frame = CTkFrame(self, width=menu_frame_width, height=menu_frame_height)
-        #
-        # self.menu_frame.place(x=menu_frame_x, y=menu_frame_y)
         menu_label = CTkLabel(menu_frame, text="Menu", font=CTkFont(family="Helvetica", size=36, weight="bold"))
         menu_label.pack(padx=20, pady=10)
 
@@ -60,26 +59,103 @@ class App(CTk):
                                 font=self.button_font,
                                 command=self.onExit)
         quit_button.pack(padx=20, pady=15)
-        if self.previous_menu_frame:
-            self.previous_menu_frame.pack_forget()
+
+        self.main_menu_frame = menu_frame
         self.menu_frame = menu_frame
 
-    def __createMenuLevels(self):
-
+    def showMenuSetting(self):
         menu_frame = self.__createMenuFrame()
-        menu_label = CTkLabel(menu_frame, text="Levels", font=CTkFont(family="Helvetica", size=36, weight="bold"))
-        menu_label.pack(padx=20, pady=10)
+        top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, "Settings")
 
-        button_width = menu_frame.winfo_reqwidth() - 40
-        button_height = 40
+        volume_frame = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
+        volume_frame.pack(fill=X, padx=5, pady=5)
 
-        start_button = CTkButton(menu_frame, text="Start", width=button_width, height=button_height,
-                                 font=self.button_font, command=self.startGame)
-        start_button.pack(padx=20, pady=5)
+        image = Image.open('assets/icons/voice.png')
+        icon = CTkImage(light_image=image, dark_image=image, size=(40, 40))
+        image_volume = CTkLabel(volume_frame, width=40, height=40, image=icon, text="")
+        image_volume.pack(side=LEFT, padx=5, pady=5)
 
-        if self.previous_menu_frame:
-            self.previous_menu_frame.pack_forget()
-        self.menu_frame = menu_frame
+        slider_volume = CTkSlider(volume_frame, from_=0, to=100, number_of_steps=5)
+        slider_volume.pack(fill=BOTH, padx=5, pady=20)
+
+        frame_control = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
+        frame_control.pack(fill=X, padx=5, pady=5)
+
+        check_mouse_control = CTkCheckBox(frame_control, font=self.button_font, text="Mouse control")
+        check_mouse_control.pack(fill=X, padx=5, pady=5)
+
+        check_keyboard_control = CTkCheckBox(frame_control, font=self.button_font, text="Keyboard control")
+        check_keyboard_control.pack(fill=X, padx=5, pady=5)
+
+        frame_right = CTkFrame(frame_control, fg_color='transparent')
+        frame_right.pack(fill=X)
+
+        button_right = CTkButton(frame_right, width=40, height=40, text="->")
+        button_right.pack(side=RIGHT, padx=5, pady=5)
+
+        label_right = CTkLabel(frame_right, text="Move right", justify=LEFT, font=self.button_font)
+        label_right.pack(fill=X, padx=5, pady=10)
+
+        frame_left = CTkFrame(frame_control, fg_color='transparent')
+        frame_left.pack(fill=X)
+
+        button_left = CTkButton(frame_left, width=40, height=40, text="<-")
+        button_left.pack(side=RIGHT, padx=5, pady=5)
+
+        label_left = CTkLabel(frame_left, text="Move left", justify=LEFT, font=self.button_font)
+        label_left.pack(fill=X, padx=5, pady=10)
+
+        if self.menu_frame:
+            self.menu_frame.destroy()
+            self.menu_frame = menu_frame
+
+    def showMenuLevels(self):
+        menu_frame = self.__createMenuFrame()
+        top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, "Levels")
+
+        levels_frame = CTkScrollableFrame(menu_frame, height=100)
+        levels_frame.pack(fill=X, padx=5, pady=5)
+
+        level_number = 1
+        row = 0
+        col = 0
+        for level in self.levels.levels:
+            state = NORMAL
+            color = 'green'
+            if level_number > self.levels.last_level + 1:
+                state = DISABLED
+                color = 'gray'
+            if level_number == self.levels.last_level + 1:
+                color = 'blue'
+            button = CTkButton(levels_frame, text=f"{level_number}", fg_color=color, width=55, height=55, state=state,
+                               font=self.button_font, command=partial(self.loadLevel, level_number))
+            button.grid(row=row, column=col, padx=5, pady=5)
+            level_number += 1
+            col += 1
+            if col > 2:
+                col = 0
+                row += 1
+
+        if self.menu_frame:
+            self.menu_frame.destroy()
+            self.menu_frame = menu_frame
+
+    def __backToMainMenu(self):
+        if self.main_menu_frame:
+            self.menu_frame.destroy()
+            self.initMainMenu()
+
+    def __createMenuTitle(self, root, title):
+        top_frame = CTkFrame(root, width=root.winfo_reqwidth())
+        top_frame.pack(fill=X, padx=5, pady=5)
+
+        button_back = CTkButton(top_frame, text="<-", width=25, command=self.__backToMainMenu)
+        button_back.pack(side=LEFT, padx=10)
+
+        menu_label = CTkLabel(top_frame, text=title, font=CTkFont(family="Helvetica", size=36, weight="bold"))
+        menu_label.pack(fill=X, padx=20, pady=10)
+
+        return top_frame, button_back, menu_label
 
     def __createMenuFrame(self):
         menu_frame_width = self.app_width // 4
@@ -88,16 +164,25 @@ class App(CTk):
         menu_frame_y = self.app_height // 2 - menu_frame_height // 2
         menu_frame = CTkFrame(self, width=menu_frame_width, height=menu_frame_height)
         menu_frame.place(x=menu_frame_x, y=menu_frame_y)
+
         return menu_frame
 
     def onExit(self):
-        answer = ConfirmDialog(title='Confirmation', message='Are you sure that you want to quit?')
+        answer = confirmation(title='Confirmation', message='Are you sure that you want to quit?')
         if answer:
             self.destroy()
 
+    def loadLevel(self, level):
+        if self.game == -1:
+            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width, height=self.app_height)
+            self.game.place(x=2, y=0)
+
     def startGame(self):
         if self.game == -1:
-            self.game = GameBoard(self, True, 'levels/level_1.json', width=self.app_width, height=self.app_height)
+            level = self.levels.last_level+1
+            if level > len(self.levels.levels):
+                level = self.levels.last_level
+            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width, height=self.app_height)
             self.game.place(x=2, y=0)
             # self.menu_frame.destroy()
 
@@ -105,11 +190,10 @@ class App(CTk):
         LevelEditor()
 
     def openLevels(self):
-        self.menu_frame.lower(self.master)
-        # self.__createMenuFrame()
+        self.showMenuLevels()
 
     def openSettings(self):
-        pass
+        self.showMenuSetting()
 
 
 def main():

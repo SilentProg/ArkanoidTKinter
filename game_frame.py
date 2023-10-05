@@ -4,7 +4,8 @@ from customtkinter import CTkFrame, CTkLabel, CTkFont, CTkButton, CTkImage
 from tkinter import Canvas
 from PIL import Image
 import pygame
-
+import configparser
+import re
 
 class LevelInfoFrame(CTkFrame):
 
@@ -370,3 +371,17 @@ class GameBoard(CTkFrame):
             if x1 + 20 >= 0 and x2 - 20 <= self.size_w:
                 self.canvas.coords(self.carriage, self.carriage_x - self.carriage_w // 2, self.size_h,
                                    self.carriage_x + self.carriage_w // 2, self.size_h - self.carriage_h)
+
+
+class Levels:
+    def __init__(self) -> None:
+        self.levels = None
+        self.levels: []
+        self.last_level: int = -1
+        self.__load_levels()
+
+    def __load_levels(self):
+        config = configparser.ConfigParser()
+        config.read('conf/player.ini')
+        self.last_level = int(config.get('player', 'level'))
+        self.levels = [f for f in os.listdir('levels') if re.match(r'^level_\d+\.json$', f)]
