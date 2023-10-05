@@ -1,11 +1,11 @@
 from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, BOTH
 from tkinter import Menu, Canvas
 from tkinter.filedialog import askopenfilename
-from level_builder import LevelBuilder
+from level_editor.level_builder import LevelBuilder
 from tkinter.messagebox import askyesno as ConfirmDialog
 
 
-class App(CTk):
+class LevelEditor(CTk):
     def __init__(self):
         super().__init__()
         self.current_page = None
@@ -81,10 +81,13 @@ class App(CTk):
         else:
             load()
 
+    def show(self):
+        self.mainloop()
+
 
 def main():
-    app = App()
-    app.mainloop()
+    app = LevelEditor()
+    app.show()
 
 
 if __name__ == '__main__':

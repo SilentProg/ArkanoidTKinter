@@ -67,3 +67,35 @@
 # window.bind("<Down>", move_ball)
 #
 # window.mainloop()
+
+import tkinter as tk
+
+
+def create_list(root, items):
+    row = 0
+    col = 0
+
+    for item in items:
+        frame = tk.Frame(root, width=100, height=100, borderwidth=1, relief="solid")
+        frame.grid(row=row, column=col, padx=5, pady=5)
+        button = tk.Button(frame, text=item)
+        button.pack(fill="both", expand=True)
+
+        col += 1
+        if col > 3:
+            col = 0
+            row += 1
+
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    root.title("Список с кнопками")
+
+    items = ["Элемент 1", "Элемент 2", "Элемент 3", "Элемент 4",
+             "Элемент 5", "Элемент 6", "Элемент 7", "Элемент 8",
+             "Элемент 9", "Элемент 10", "Элемент 11", "Элемент 12"]
+
+    create_list(root, items)
+
+    root.mainloop()
+
