@@ -2,91 +2,11 @@ import json
 import os
 from customtkinter import CTkFrame, CTkLabel, CTkFont, CTkButton, CTkImage
 from tkinter import Canvas
+from tkinter.messagebox import askquestion
 from PIL import Image
 import pygame
 import configparser
 import re
-
-
-class LevelInfoFrame(CTkFrame):
-
-    def __init__(self, master, level, hp, toggle_pause, restart, **kwargs):
-        super().__init__(master, **kwargs)
-        self.level = level
-        self.level_label = None
-        self.level_score = None
-        self.hp = hp
-        self.restart = restart
-        self.togglePause = toggle_pause
-        self.max_hp = hp
-        self.hp_bar = []
-        self.hp_icon = Image.open('assets\\icons\\hp.png')
-        self.hp_broken_icon = Image.open('assets\\icons\\hp_broken.png')
-        self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
-        self.level_font = CTkFont(family="Helvetica", size=36, weight="bold")
-        self.menu_click_sound = pygame.mixer.Sound("assets/sounds/menu_click.wav")
-        self.initUI()
-
-    def setHp(self, hp):
-        self.hp = hp
-        self.max_hp = hp
-        self.initHp()
-
-    def setMaxHp(self, max_hp):
-        self.max_hp = max_hp
-        self.initHp()
-
-    def initUI(self):
-        button_menu = CTkButton(self, text="Menu", font=self.button_font, height=40, command=self.returnToMenu)
-        button_menu.grid(row=0, column=0, padx=10, pady=10)
-
-        self.level_label = CTkLabel(self, text="Level: {} |".format(1), font=self.level_font)
-        self.level_label.grid(row=0, column=1, padx=10, pady=10)
-
-        self.level_score = CTkLabel(self, text="Score: {} |".format(0), font=self.level_font)
-        self.level_score.grid(row=0, column=2, padx=10, pady=10)
-
-        hp_label = CTkLabel(self, text="HP:", font=self.level_font)
-        hp_label.grid(row=0, column=3, padx=10, pady=10)
-        self.initHp()
-
-    def reInit(self):
-        self.setHp(self.max_hp)
-        self.setScore(0)
-        self.setLevel(self.level)
-
-    def initHp(self):
-        print(self.hp)
-        for image in self.hp_bar:
-            image.destroy()
-        self.hp_bar.clear()
-        print(os.getcwd())
-        column = 4
-        for i in range(self.hp):
-            hp_image = CTkImage(dark_image=self.hp_icon, light_image=self.hp_icon, size=(50, 50))
-            image = CTkLabel(self, image=hp_image, text="")
-            image.grid(row=0, column=column, padx=5, pady=5)
-            self.hp_bar.append(image)
-            column += 1
-
-    def hpHit(self):
-        if self.hp == 0:
-            return
-        hp_broken_image = CTkImage(dark_image=self.hp_broken_icon, light_image=self.hp_broken_icon, size=(50, 50))
-        self.hp_bar[self.max_hp - self.hp].configure(require_redraw=True, image=hp_broken_image)
-        self.hp -= 1
-
-    def returnToMenu(self):
-        self.restart()
-        # self.togglePause()
-        self.menu_click_sound.play()
-        # self.hpHit()
-
-    def setLevel(self, level):
-        self.level_label.configure(text="Level: {} |".format(str(level)))
-
-    def setScore(self, score):
-        self.level_score.configure(text="Score: {} |".format(str(score)))
 
 
 class GameBoard(CTkFrame):
@@ -147,23 +67,21 @@ class GameBoard(CTkFrame):
             self.canvas.bind('<Motion>', self.motion)
             self.ball_movement()
 
-    def restart(self):
-
+    def restart(self, next_level: bool = False):
         self.canvas.delete("all")
         self.walls = []
         self.bricks = []
-        self.hp = 3
         self.points = 0
         self.level_info_frame.reInit()
         self.ball_vx, self.ball_vy = -5, -5
         self.ball_x, self.ball_y = self.size_w // 2, self.size_h // 2
         self.carriage_x = self.size_w // 2
-        self.loadLevel()
+        self.loadLevel(next_level)
         if not self.carriage_stop:
             self.carriage_stop = True
             self.ball_movement()
 
-    def loadLevel(self):
+    def loadLevel(self, next_level: bool = False):
         self.ball = self.canvas.create_oval(self.ball_x - self.radius, self.ball_y - self.radius,
                                             self.ball_x + self.radius, self.ball_y + self.radius,
                                             fill='white',
@@ -184,10 +102,11 @@ class GameBoard(CTkFrame):
             self.loadItems(self.level['bricks'], self.bricks)
             self.loadItems(self.level['walls'], self.walls)
 
-        if self.level:
+        if self.level and not next_level:
             load()
         elif self.level_path:
             try:
+                print(self.level_path)
                 with open(self.level_path, "r") as json_file:
                     self.level = json.load(json_file)
                     load()
@@ -207,6 +126,14 @@ class GameBoard(CTkFrame):
                 "bricks": {},
                 "walls": {}
             }
+
+    def nextLevel(self):
+        if self.levels.getLevelNumber() + 1 > len(self.levels.levels):
+            return
+        ans = askquestion("Наступний рівень", "Перейти до наступного рівня?")
+        if ans == 'yes':
+            self.level_path = f"levels/level_{self.levels.getLevelNumber() + 1}.json"
+            self.restart(next_level=True)
 
     def loadItems(self, items: {}, array):
         items_keys = list(items.keys())
@@ -240,7 +167,7 @@ class GameBoard(CTkFrame):
         return self.canvas
 
     def initUI(self):
-        self.level_info_frame = LevelInfoFrame(self, "1", self.hp, self.togglePause, self.restart,
+        self.level_info_frame = LevelInfoFrame(self, self,
                                                width=self.size_w - 15,
                                                height=self.info_frame_size_h - 10)
         if self.showUi:
@@ -264,8 +191,6 @@ class GameBoard(CTkFrame):
             self.canvas.bind('<Motion>', self.motion)
 
     def ball_movement(self):
-        print("move")
-        print(self.level['bricks'])
         self.ball_x, self.ball_y = self.ball_x + self.ball_vx, self.ball_y + self.ball_vy
         self.canvas.coords(self.ball, self.ball_x - self.radius, self.ball_y - self.radius, self.ball_x + self.radius,
                            self.ball_y + self.radius)
@@ -325,6 +250,7 @@ class GameBoard(CTkFrame):
             self.canvas.create_text(self.size_w // 2, self.size_h // 2, text='You WIN!', fill='green', font=(None, 50))
             self.carriage_stop = False
             self.levels.updateLastFromPath(self.level_path, self.points)
+            self.nextLevel()
             return
 
         if self.ball_y < (self.size_h - self.radius):
@@ -383,9 +309,98 @@ class GameBoard(CTkFrame):
                                    self.carriage_x + self.carriage_w // 2, self.size_h - self.carriage_h)
 
 
+class LevelInfoFrame(CTkFrame):
+
+    def __init__(self, master, board: GameBoard, **kwargs):
+        super().__init__(master, **kwargs)
+        self.level = board.level
+        self.level_label = None
+        self.level_score = None
+        self.board: GameBoard = board
+        self.hp = board.hp
+        self.max_hp = board.hp
+        self.hp_bar = []
+        self.hp_icon = Image.open('assets\\icons\\hp.png')
+        self.hp_broken_icon = Image.open('assets\\icons\\hp_broken.png')
+        self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
+        self.level_font = CTkFont(family="Helvetica", size=36, weight="bold")
+        self.menu_click_sound = pygame.mixer.Sound("assets/sounds/menu_click.wav")
+        self.initUI()
+
+    def setHp(self, hp):
+        self.hp = hp
+        self.max_hp = hp
+        self.initHp()
+
+    def setMaxHp(self, max_hp):
+        self.max_hp = max_hp
+        self.initHp()
+
+    def initUI(self):
+        button_menu = CTkButton(self, text="Menu", font=self.button_font, height=40, command=self.returnToMenu)
+        button_menu.grid(row=0, column=0, padx=10, pady=10)
+
+        button_pause = CTkButton(self, text="P", font=self.button_font, width=40, height=40,
+                                 command=self.board.togglePause)
+        button_pause.grid(row=0, column=1, padx=10, pady=10)
+
+        button_restart = CTkButton(self, text="R", font=self.button_font, width=40, height=40,
+                                   command=self.board.restart)
+        button_restart.grid(row=0, column=2, padx=10, pady=10)
+
+        self.level_label = CTkLabel(self, text="Level: {} |".format(self.board.levels.getLevelNumber() + 1),
+                                    font=self.level_font)
+        self.level_label.grid(row=0, column=3, padx=10, pady=10)
+
+        self.level_score = CTkLabel(self, text="Score: {} |".format(0), font=self.level_font)
+        self.level_score.grid(row=0, column=4, padx=10, pady=10)
+
+        hp_label = CTkLabel(self, text="HP:", font=self.level_font)
+        hp_label.grid(row=0, column=5, padx=10, pady=10)
+        self.initHp()
+
+    def reInit(self):
+        self.setHp(self.max_hp)
+        self.setScore(0)
+        self.setLevel(self.board.levels.getLevelNumber() + 1)
+
+    def initHp(self):
+        print(self.hp)
+        for image in self.hp_bar:
+            image.destroy()
+        self.hp_bar.clear()
+        column = 6
+        for i in range(self.hp):
+            hp_image = CTkImage(dark_image=self.hp_icon, light_image=self.hp_icon, size=(50, 50))
+            image = CTkLabel(self, image=hp_image, text="")
+            image.grid(row=0, column=column, padx=5, pady=5)
+            self.hp_bar.append(image)
+            column += 1
+
+    def hpHit(self):
+        if self.hp == 0:
+            return
+        hp_broken_image = CTkImage(dark_image=self.hp_broken_icon, light_image=self.hp_broken_icon, size=(50, 50))
+        self.hp_bar[self.max_hp - self.hp].configure(require_redraw=True, image=hp_broken_image)
+        self.hp -= 1
+
+    def returnToMenu(self):
+        self.board.togglePause()
+        self.after(100, self.board.destroy)
+        # self.board.restart()
+        # self.togglePause()
+        # self.menu_click_sound.play()
+        # self.hpHit()
+
+    def setLevel(self, level):
+        self.level_label.configure(text="Level: {} |".format(str(level)))
+
+    def setScore(self, score):
+        self.level_score.configure(text="Score: {} |".format(str(score)))
+
+
 class Levels:
     def __init__(self) -> None:
-        self.levels = None
         self.levels: []
         self.last_level: int = -1
         self.__config = configparser.ConfigParser()
@@ -406,6 +421,10 @@ class Levels:
     def __reWrite(self):
         with open('conf/player.ini', 'w') as configfile:
             self.__config.write(configfile)
+
+    def getLevelNumber(self):
+        self.__load_levels()
+        return self.last_level
 
     def __getLevelNumber(self, level_path):
         start_index = level_path.find("_") + 1

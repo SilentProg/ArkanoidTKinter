@@ -212,20 +212,19 @@ class App(CTk):
             self.destroy()
 
     def loadLevel(self, level):
-        if self.game == -1:
-            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
-                                  height=self.app_height)
-            self.game.place(x=2, y=0)
+        self.game = None
+        self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
+                              height=self.app_height)
+        self.game.place(x=2, y=0)
 
     def startGame(self):
-        if self.game == -1:
-            level = self.levels.last_level + 1
-            if level > len(self.levels.levels):
-                level = self.levels.last_level
-            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
-                                  height=self.app_height)
-            self.game.place(x=2, y=0)
-            # self.menu_frame.destroy()
+        self.game = None
+        level = self.levels.last_level + 1
+        if level > len(self.levels.levels):
+            level = self.levels.last_level
+        self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
+                              height=self.app_height)
+        self.game.place(x=2, y=0)
 
     def openLevelEditor(self):
         LevelEditor()
