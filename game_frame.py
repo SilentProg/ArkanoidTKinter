@@ -7,6 +7,7 @@ import pygame
 import configparser
 import re
 
+
 class LevelInfoFrame(CTkFrame):
 
     def __init__(self, master, level, hp, toggle_pause, restart, **kwargs):
@@ -117,7 +118,11 @@ class GameBoard(CTkFrame):
         self.bricks_zone = 0.2
         self.bricks = []
         self.walls = []
+        self.settings = Settings()
+        self.levels = Levels()
         pygame.mixer.init()
+        self.channel = pygame.mixer.Channel(0)
+        self.channel.set_volume(self.settings.getVolume())
         self.hit_sound = pygame.mixer.Sound("assets/sounds/hit_received.wav")
         self.level_failed_sound = pygame.mixer.Sound("assets/sounds/level_failed.wav")
         self.level_confirm_sound = pygame.mixer.Sound("assets/sounds/level_confirm.wav")
@@ -250,10 +255,13 @@ class GameBoard(CTkFrame):
 
         if not self.pause:
             self.ball_movement()
-        self.canvas.bind('<Key>', self.control)
-        self.canvas.bind('<KeyPress>', self.control)
-        self.canvas.bind('<KeyRelease>', self.control)
-        self.canvas.bind('<Motion>', self.motion)
+        mouse, keyboard = self.settings.getControlsType()
+        if keyboard:
+            self.canvas.bind('<Key>', self.control)
+            self.canvas.bind('<KeyPress>', self.control)
+            self.canvas.bind('<KeyRelease>', self.control)
+        if mouse:
+            self.canvas.bind('<Motion>', self.motion)
 
     def ball_movement(self):
         print("move")
@@ -313,9 +321,10 @@ class GameBoard(CTkFrame):
             self.update_point()
 
         if len(self.bricks) == 0:
-            self.level_confirm_sound.play()
+            self.channel.play(self.level_confirm_sound)
             self.canvas.create_text(self.size_w // 2, self.size_h // 2, text='You WIN!', fill='green', font=(None, 50))
             self.carriage_stop = False
+            self.levels.updateLastFromPath(self.level_path, self.points)
             return
 
         if self.ball_y < (self.size_h - self.radius):
@@ -323,13 +332,13 @@ class GameBoard(CTkFrame):
                 self.root.after(self.interval, self.ball_movement)
         else:
             if self.hp > 1:
-                self.hit_sound.play()
+                self.channel.play(self.hit_sound)
                 self.hp -= 1
                 self.level_info_frame.hpHit()
                 self.ball_vy = -self.ball_vy
                 self.root.after(self.interval, self.ball_movement)
             else:
-                self.level_failed_sound.play()
+                self.channel.play(self.level_failed_sound)
                 self.hp -= 1
                 self.level_info_frame.hpHit()
                 self.canvas.create_text(self.size_w // 2, self.size_h // 2, text='GAME OVER', fill='red',
@@ -348,12 +357,13 @@ class GameBoard(CTkFrame):
         self.level_info_frame.setScore(self.points)
 
     def control(self, event):
+        right, left = self.settings.getKeyboardKeys()
         if self.pause:
             return
         x1, y1, x2, y2 = self.canvas.coords(self.carriage)
-        if event.keysym == 'Left' and x1 + 20 >= 0:
+        if event.keysym == left and x1 + 20 >= 0:
             self.carriage_x -= 10
-        if event.keysym == 'Right' and x2 - 20 <= self.size_w:
+        if event.keysym == right and x2 - 20 <= self.size_w:
             self.carriage_x += 10
 
         if self.carriage_stop:
@@ -378,10 +388,103 @@ class Levels:
         self.levels = None
         self.levels: []
         self.last_level: int = -1
+        self.__config = configparser.ConfigParser()
+        self.__load_levels()
+
+    def updateLevels(self):
         self.__load_levels()
 
     def __load_levels(self):
-        config = configparser.ConfigParser()
-        config.read('conf/player.ini')
-        self.last_level = int(config.get('player', 'level'))
+        if not os.path.exists('conf/player.ini'):
+            self.__config.add_section('Player')
+            self.__config.set('Player', 'level', '1')
+            self.__reWrite()
+        self.__config.read('conf/player.ini')
+        self.last_level = int(self.__config.get('Player', 'level'))
         self.levels = [f for f in os.listdir('levels') if re.match(r'^level_\d+\.json$', f)]
+
+    def __reWrite(self):
+        with open('conf/player.ini', 'w') as configfile:
+            self.__config.write(configfile)
+
+    def __getLevelNumber(self, level_path):
+        start_index = level_path.find("_") + 1
+        end_index = level_path.find(".json")
+        number_str = level_path[start_index:end_index]
+        return int(number_str)
+
+    def updateLastFromPath(self, level_number: str, score: int):
+        level_number = self.__getLevelNumber(level_number)
+        self.updateLast(level_number, score)
+
+    def updateLast(self, level_number: int, score: int):
+        last = int(self.__config.get('Player', 'level'))
+        if level_number > last:
+            self.last_level = level_number
+            self.__config.set('Player', 'level', str(level_number))
+        level = f'{level_number}'
+        try:
+            sc = int(self.__config.get(level, 'score'))
+            if sc < score:
+                self.__config.set(level, 'score', str(score))
+        except:
+            self.__config.add_section(level)
+            self.__config.set(level, 'score', str(score))
+            self.__config.set(level, 'confirm', '1')
+        self.__reWrite()
+
+
+class Settings:
+    def __init__(self) -> None:
+        self.__config = configparser.ConfigParser()
+        if not os.path.exists('conf/settings.ini'):
+            self.__config.add_section('Sounds')
+            self.__config.add_section('Controls')
+            self.__config.set('Sounds', 'volume', str(100))
+            self.__config.set('Controls', 'mouse', str(True))
+            self.__config.set('Controls', 'keyboard', str(True))
+            self.__config.set('Controls', 'move_right', 'Right')
+            self.__config.set('Controls', 'move_left', 'Left')
+            self.__reWrite()
+        self.__config.read('conf/settings.ini')
+
+    def __reWrite(self):
+        with open('conf/settings.ini', 'w') as configfile:
+            self.__config.write(configfile)
+
+    def updateVolume(self, volume: int):
+        self.__config.set('Sounds', 'volume', str(volume))
+        self.__reWrite()
+
+    def updateMouseControl(self, mouse_control):
+        self.__config.set('Controls', 'mouse', mouse_control)
+        self.__reWrite()
+
+    def updateKeyboardControl(self, keyboard_control):
+        self.__config.set('Controls', 'keyboard', keyboard_control)
+        self.__reWrite()
+
+    def updateMoveRight(self, move_right: str):
+        self.__config.set('Controls', 'move_right', move_right)
+        self.__reWrite()
+
+    def updateMoveLeft(self, move_left: str):
+        self.__config.set('Controls', 'move_left', move_left)
+        self.__reWrite()
+
+    def getVolume(self):
+        return int(self.__config.get("Sounds", 'volume'))
+
+    def getControlsType(self):
+        mouse = False
+        keyboard = False
+
+        if self.__config.get("Controls", 'mouse') == 'True':
+            mouse = True
+        if self.__config.get("Controls", 'keyboard') == 'True':
+            keyboard = True
+
+        return mouse, keyboard
+
+    def getKeyboardKeys(self):
+        return self.__config.get("Controls", 'move_right'), self.__config.get("Controls", 'move_left')

@@ -1,11 +1,10 @@
 from functools import partial
-from tkinter import Frame
 
 from PIL import Image
-from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, CTkFont, CTkToplevel, LEFT, X, DISABLED, NORMAL, BOTH, \
-    CTkScrollableFrame, CTkImage, CTkSlider, CTkCheckBox, RIGHT
+from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, CTkFont, LEFT, X, DISABLED, NORMAL, BOTH, \
+    CTkScrollableFrame, CTkImage, CTkSlider, CTkCheckBox, RIGHT, IntVar, StringVar
 from tkinter.messagebox import askyesno as confirmation
-from game_frame import GameBoard, Levels
+from game_frame import GameBoard, Levels, Settings
 from level_editor import LevelEditor
 
 
@@ -22,6 +21,7 @@ class App(CTk):
         self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
         self.initUI()
         self.levels = Levels()
+        self.settings = Settings()
         self.initMainMenu()
 
     def initUI(self):
@@ -75,22 +75,34 @@ class App(CTk):
         image_volume = CTkLabel(volume_frame, width=40, height=40, image=icon, text="")
         image_volume.pack(side=LEFT, padx=5, pady=5)
 
-        slider_volume = CTkSlider(volume_frame, from_=0, to=100, number_of_steps=5)
+        volume = IntVar(value=self.settings.getVolume())
+        slider_volume = CTkSlider(volume_frame, from_=0, to=100, variable=volume, number_of_steps=5)
         slider_volume.pack(fill=BOTH, padx=5, pady=20)
 
         frame_control = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
         frame_control.pack(fill=X, padx=5, pady=5)
 
-        check_mouse_control = CTkCheckBox(frame_control, font=self.button_font, text="Mouse control")
+        mouse, keyboard = self.settings.getControlsType()
+        mouse_control = StringVar(value=str(mouse))
+        keyboard_control = StringVar(value=str(keyboard))
+        check_mouse_control = CTkCheckBox(frame_control, font=self.button_font, text="Mouse control",
+                                          variable=mouse_control, onvalue="True", offvalue="False")
+        if not mouse_control:
+            check_mouse_control.deselect()
         check_mouse_control.pack(fill=X, padx=5, pady=5)
 
-        check_keyboard_control = CTkCheckBox(frame_control, font=self.button_font, text="Keyboard control")
+        check_keyboard_control = CTkCheckBox(frame_control, font=self.button_font, text="Keyboard control",
+                                             variable=keyboard_control, onvalue="True", offvalue="False")
+        if not keyboard_control:
+            check_mouse_control.deselect()
         check_keyboard_control.pack(fill=X, padx=5, pady=5)
 
         frame_right = CTkFrame(frame_control, fg_color='transparent')
         frame_right.pack(fill=X)
 
-        button_right = CTkButton(frame_right, width=40, height=40, text="->")
+        right, left = self.settings.getKeyboardKeys()
+        button_right = CTkButton(frame_right, width=40, height=40, text=right)
+        button_right.configure(command=partial(self.readKey, button_right))
         button_right.pack(side=RIGHT, padx=5, pady=5)
 
         label_right = CTkLabel(frame_right, text="Move right", justify=LEFT, font=self.button_font)
@@ -99,15 +111,42 @@ class App(CTk):
         frame_left = CTkFrame(frame_control, fg_color='transparent')
         frame_left.pack(fill=X)
 
-        button_left = CTkButton(frame_left, width=40, height=40, text="<-")
+        button_left = CTkButton(frame_left, width=40, height=40, text=left)
+        button_left.configure(command=partial(self.readKey, button_left))
         button_left.pack(side=RIGHT, padx=5, pady=5)
 
         label_left = CTkLabel(frame_left, text="Move left", justify=LEFT, font=self.button_font)
         label_left.pack(fill=X, padx=5, pady=10)
 
+        frame_save = CTkFrame(menu_frame)
+        frame_save.pack(fill=X, padx=5, pady=15)
+
+        save_button = CTkButton(frame_save, text="Save",
+                                font=self.button_font,
+                                command=partial(self.onSaveSettings, slider_volume, check_mouse_control, check_keyboard_control,
+                                                button_right, button_left))
+        save_button.pack(fill=X, padx=5, pady=5)
+
         if self.menu_frame:
             self.menu_frame.destroy()
             self.menu_frame = menu_frame
+
+    def readKey(self, button: CTkButton):
+        button.configure(text="...")
+        self.bind("<Key>", partial(self.updateButtonControl, button))
+
+    def updateButtonControl(self, button, event):
+        button.configure(text=event.keysym)
+        self.unbind("<Key>")
+
+    def onSaveSettings(self, volume: CTkSlider, mouse_control: CTkCheckBox, keyboard_control: CTkCheckBox, right: CTkButton, left: CTkButton):
+        print(volume.get(), mouse_control.get(), keyboard_control.get(), right.cget("text"), left.cget("text"))
+        self.settings.updateVolume(int(volume.get()))
+        self.settings.updateMouseControl(mouse_control.get())
+        self.settings.updateKeyboardControl(keyboard_control.get())
+        self.settings.updateMoveRight(right.cget("text"))
+        self.settings.updateMoveLeft(left.cget("text"))
+        print("Save")
 
     def showMenuLevels(self):
         menu_frame = self.__createMenuFrame()
@@ -174,15 +213,17 @@ class App(CTk):
 
     def loadLevel(self, level):
         if self.game == -1:
-            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width, height=self.app_height)
+            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
+                                  height=self.app_height)
             self.game.place(x=2, y=0)
 
     def startGame(self):
         if self.game == -1:
-            level = self.levels.last_level+1
+            level = self.levels.last_level + 1
             if level > len(self.levels.levels):
                 level = self.levels.last_level
-            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width, height=self.app_height)
+            self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
+                                  height=self.app_height)
             self.game.place(x=2, y=0)
             # self.menu_frame.destroy()
 

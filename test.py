@@ -99,38 +99,57 @@
 #
 #     root.mainloop()
 
-import tkinter as tk
-from tkinter import messagebox
+# import tkinter as tk
+# from tkinter import messagebox
 
 
-def open_modal_window():
-    modal_window = tk.Toplevel(root)
-    modal_window.title("Модальное окно")
+# def open_modal_window():
+#     modal_window = tk.Toplevel(root)
+#     modal_window.title("Модальное окно")
+#
+#     # Установить модальный режим для модального окна
+#     modal_window.grab_set()
+#
+#     # Создать некоторый контент для модального окна
+#     label = tk.Label(modal_window, text="Это модальное окно")
+#     label.pack(padx=20, pady=20)
+#
+#     # Функция, которая будет вызываться при закрытии модального окна
+#     def on_close():
+#         modal_window.grab_release()
+#         modal_window.destroy()
+#
+#     # Создать кнопку для закрытия модального окна
+#     close_button = tk.Button(modal_window, text="Закрыть", command=on_close)
+#     close_button.pack(pady=10)
+#
+#
+# if __name__ == "__main__":
+#     root = tk.Tk()
+#     root.title("Главное окно")
+#
+#     # Создать кнопку для открытия модального окна
+#     open_button = tk.Button(root, text="Открыть модальное окно", command=open_modal_window)
+#     open_button.pack(padx=20, pady=20)
+#
+#     root.mainloop()
 
-    # Установить модальный режим для модального окна
-    modal_window.grab_set()
+# import tkinter as tk
+#
+# def on_button_click():
+#     button.config(text="Натисніть клавішу...")
+#     root.bind("<Key>", update_button_text)
+#
+# def update_button_text(event):
+#     button.config(text=event.keysym)
+#     root.unbind("<Key>")
+#
+# root = tk.Tk()
+# root.title("Tkinter Клавіші")
+#
+# button = tk.Button(root, text="Right", command=on_button_click)
+# button.pack(padx=20, pady=20)
+#
+# root.mainloop()
 
-    # Создать некоторый контент для модального окна
-    label = tk.Label(modal_window, text="Это модальное окно")
-    label.pack(padx=20, pady=20)
-
-    # Функция, которая будет вызываться при закрытии модального окна
-    def on_close():
-        modal_window.grab_release()
-        modal_window.destroy()
-
-    # Создать кнопку для закрытия модального окна
-    close_button = tk.Button(modal_window, text="Закрыть", command=on_close)
-    close_button.pack(pady=10)
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    root.title("Главное окно")
-
-    # Создать кнопку для открытия модального окна
-    open_button = tk.Button(root, text="Открыть модальное окно", command=open_modal_window)
-    open_button.pack(padx=20, pady=20)
-
-    root.mainloop()
 
