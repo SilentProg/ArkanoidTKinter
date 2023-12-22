@@ -331,7 +331,7 @@ class LevelBuilder(CTkFrame):
         self.initUI()
 
     def initUI(self):
-        game_board = GameBoard(self, False, self.level_path, True, width=1080, height=720)
+        game_board = GameBoard(self, False, self.level_path, True, width=1000, height=640)
 
         self.canvas = game_board.getCanvas()
         self.control_panel = LBControlPanel(self, game_board, width=190, height=self.master.winfo_height() - 10)

@@ -175,6 +175,7 @@ class GameBoard(CTkFrame):
 
     def initGame(self):
         self.canvas = Canvas(self, width=self.size_w, height=self.size_h, bg='black')
+        print(f'canvas size {self.canvas.winfo_reqwidth()} * {self.canvas.winfo_reqheight()}')
         self.canvas.focus_set()
         self.canvas.pack(padx=5, pady=5)
 

@@ -10,8 +10,8 @@ class LevelEditor(CTkToplevel):
     def __init__(self):
         super().__init__()
         self.current_page = None
-        self.app_width = 1265
-        self.app_height = 670
+        self.app_width = 1210
+        self.app_height = 650
         self.initUI()
         self.initMainMenu()
 
@@ -34,17 +34,11 @@ class LevelEditor(CTkToplevel):
 
         fileMenu = Menu(menubar, tearoff=0)
         levelMenu = Menu(menubar, tearoff=0)
-        # controlMenu = Menu(menubar, tearoff=0)
 
         levelMenu.add_command(label="Новий рівень", command=self.newLevel)
         levelMenu.add_command(label="Завантажити рівень", command=self.loadLevel)
 
-        # controlMenu.add_command(label="Блок")
-        # controlMenu.add_command(label="Каретка")
-        # controlMenu.add_command(label="Фон")
-
         fileMenu.add_cascade(label="Рівень", menu=levelMenu)
-        # fileMenu.add_cascade(label="Елементи керування", menu=controlMenu)
         fileMenu.add_command(label="Вихід", command=self.onExit)
         menubar.add_cascade(label="Файл", menu=fileMenu)
 
@@ -83,6 +77,7 @@ class LevelEditor(CTkToplevel):
                 load()
         else:
             load()
+
 
 def main():
     app = LevelEditor()

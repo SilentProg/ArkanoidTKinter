@@ -9,8 +9,8 @@ from level_editor import LevelEditor
 
 
 class App(CTk):
-    app_width = 1080
-    app_height = 720
+    app_width = 1000
+    app_height = 640
     menu_frame: CTkFrame = None
     main_menu_frame: CTkFrame = None
     current_menu: CTkFrame = None
