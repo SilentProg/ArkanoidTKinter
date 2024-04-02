@@ -27,8 +27,8 @@ class App(CTk):
         self.initUI()
         self.levels = Levels()
         self.settings = Settings()
-        self.initMainMenu()
-        # self.showAuthMenu()
+        # self.initMainMenu()
+        self.showSignUp()
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()
@@ -69,7 +69,7 @@ class App(CTk):
         self.main_menu_frame = menu_frame
         self.menu_frame = menu_frame
 
-    def showAuthMenu(self):
+    def showSignIn(self):
         menu_frame = self.__createMenuFrame()
         menu_label = CTkLabel(menu_frame, text=i18n.t('sign-in'), font=CTkFont(family="Helvetica", size=36, weight="bold"))
         menu_label.pack(padx=20, pady=10)
@@ -97,6 +97,45 @@ class App(CTk):
         sign_in_button = CTkButton(menu_frame, text=i18n.t('sign-in-process'), cursor="hand2", width=button_width, height=button_height,
                                    font=self.button_font)
         sign_in_button.pack(padx=20, pady=10)
+
+    def showSignUp(self):
+        menu_frame = self.__createMenuFrame()
+        menu_label = CTkLabel(menu_frame, text=i18n.t('sign-up'),
+                              font=CTkFont(family="Helvetica", size=36, weight="bold"))
+        menu_label.pack(padx=20, pady=10)
+
+        button_width = menu_frame.winfo_reqwidth() - 40
+        button_height = 40
+
+        username_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
+                               placeholder_text=i18n.t('username'))
+        username_entry.pack(padx=0, pady=5)
+
+        email_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
+                               placeholder_text=i18n.t('email'))
+        email_entry.pack(padx=0, pady=5)
+
+        password_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
+                                  placeholder_text=i18n.t('password'), show='*')
+        password_entry.pack(padx=0, pady=5)
+
+        password_confirm_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
+                                  placeholder_text=i18n.t('password-confirm'), show='*')
+        password_confirm_entry.pack(padx=0, pady=5)
+
+        reg_frame = CTkFrame(master=menu_frame)
+
+        sign_up_label = CTkLabel(reg_frame, text=i18n.t('ask-have-account'), cursor="hand2",
+                                 font=CTkFont(family="Helvetica", size=14, underline=True))
+        sign_up_label.pack(pady=5, padx=5, side=LEFT)
+
+        reg_frame.pack(fill=BOTH, expand=1, padx=20, pady=5)
+
+        sign_in_button = CTkButton(menu_frame, text=i18n.t('sign-up-process'), cursor="hand2", width=button_width,
+                                   height=button_height,
+                                   font=self.button_font)
+        sign_in_button.pack(padx=20, pady=10)
+
 
     def showMenuSetting(self):
         menu_frame = self.__createMenuFrame()
