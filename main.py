@@ -1,8 +1,13 @@
+import i18n
+
+import i18n_config
+
 from functools import partial
+from tkinter import Menu
 
 from PIL import Image
 from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, CTkFont, LEFT, X, DISABLED, NORMAL, BOTH, \
-    CTkScrollableFrame, CTkImage, CTkSlider, CTkCheckBox, RIGHT, IntVar, StringVar
+    CTkScrollableFrame, CTkImage, CTkSlider, CTkCheckBox, RIGHT, IntVar, StringVar, CTkEntry
 from tkinter.messagebox import askyesno as confirmation
 from game_frame import GameBoard, Levels, Settings
 from level_editor import LevelEditor
@@ -23,6 +28,7 @@ class App(CTk):
         self.levels = Levels()
         self.settings = Settings()
         self.initMainMenu()
+        # self.showAuthMenu()
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()
@@ -32,30 +38,30 @@ class App(CTk):
         y = (screen_height // 2) - (self.app_height // 2)
 
         self.geometry(f"{self.app_width}x{self.app_height}+{x}+{y}")
-        self.title("Arkanoid")
+        self.title(i18n.t('game-title'))
         self.resizable(False, False)
 
     def initMainMenu(self):
         menu_frame = self.__createMenuFrame()
-        menu_label = CTkLabel(menu_frame, text="Menu", font=CTkFont(family="Helvetica", size=36, weight="bold"))
+        menu_label = CTkLabel(menu_frame, text=i18n.t('menu'), font=CTkFont(family="Helvetica", size=36, weight="bold"))
         menu_label.pack(padx=20, pady=10)
 
         button_width = menu_frame.winfo_reqwidth() - 40
         button_height = 40
 
-        start_button = CTkButton(menu_frame, text="Start", width=button_width, height=button_height,
+        start_button = CTkButton(menu_frame, text=i18n.t('play'), width=button_width, height=button_height,
                                  font=self.button_font, command=self.startGame)
         start_button.pack(padx=20, pady=5)
-        levels_button = CTkButton(menu_frame, text="Levels", width=button_width, height=button_height,
+        levels_button = CTkButton(menu_frame, text=i18n.t('levels'), width=button_width, height=button_height,
                                   font=self.button_font, command=self.openLevels)
         levels_button.pack(padx=20, pady=5)
-        levels_editor = CTkButton(menu_frame, text="Levels editor", width=button_width, height=button_height,
+        levels_editor = CTkButton(menu_frame, text=i18n.t('level-editor'), width=button_width, height=button_height,
                                   font=self.button_font, command=self.openLevelEditor)
         levels_editor.pack(padx=20, pady=5)
-        settings_button = CTkButton(menu_frame, text="Settings", width=button_width, height=button_height,
+        settings_button = CTkButton(menu_frame, text=i18n.t('settings'), width=button_width, height=button_height,
                                     font=self.button_font, command=self.openSettings)
         settings_button.pack(padx=20, pady=5)
-        quit_button = CTkButton(menu_frame, text="Quit", width=button_width, height=button_height,
+        quit_button = CTkButton(menu_frame, text=i18n.t('quit'), width=button_width, height=button_height,
                                 font=self.button_font,
                                 command=self.onExit)
         quit_button.pack(padx=20, pady=15)
@@ -63,9 +69,38 @@ class App(CTk):
         self.main_menu_frame = menu_frame
         self.menu_frame = menu_frame
 
+    def showAuthMenu(self):
+        menu_frame = self.__createMenuFrame()
+        menu_label = CTkLabel(menu_frame, text=i18n.t('sign-in'), font=CTkFont(family="Helvetica", size=36, weight="bold"))
+        menu_label.pack(padx=20, pady=10)
+
+        button_width = menu_frame.winfo_reqwidth() - 40
+        button_height = 40
+
+        email_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height, placeholder_text=i18n.t('email'))
+        email_entry.pack(padx=0, pady=5)
+
+        password_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
+                                  placeholder_text=i18n.t('password'), show='*')
+        password_entry.pack(padx=0, pady=5)
+
+        reg_frame = CTkFrame(master=menu_frame)
+
+        sign_up_label = CTkLabel(reg_frame, text=i18n.t('sign-up'), cursor="hand2", font=CTkFont(family="Helvetica", size=14, underline=True))
+        sign_up_label.pack(pady=5, padx=5, side=LEFT)
+
+        forget_label = CTkLabel(reg_frame, text=i18n.t('forget-password'), cursor="hand2", font=CTkFont(family="Helvetica", size=14, underline=True))
+        forget_label.pack(pady=5, padx=5, side=LEFT)
+
+        reg_frame.pack(fill=BOTH, expand=1, padx=20, pady=5)
+
+        sign_in_button = CTkButton(menu_frame, text=i18n.t('sign-in-process'), cursor="hand2", width=button_width, height=button_height,
+                                   font=self.button_font)
+        sign_in_button.pack(padx=20, pady=10)
+
     def showMenuSetting(self):
         menu_frame = self.__createMenuFrame()
-        top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, "Settings")
+        top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, i18n.t('settings'))
 
         volume_frame = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
         volume_frame.pack(fill=X, padx=5, pady=5)
@@ -85,13 +120,13 @@ class App(CTk):
         mouse, keyboard = self.settings.getControlsType()
         mouse_control = StringVar(value=str(mouse))
         keyboard_control = StringVar(value=str(keyboard))
-        check_mouse_control = CTkCheckBox(frame_control, font=self.button_font, text="Mouse control",
+        check_mouse_control = CTkCheckBox(frame_control, font=self.button_font, text=i18n.t("mouse-control"),
                                           variable=mouse_control, onvalue="True", offvalue="False")
         if not mouse_control:
             check_mouse_control.deselect()
         check_mouse_control.pack(fill=X, padx=5, pady=5)
 
-        check_keyboard_control = CTkCheckBox(frame_control, font=self.button_font, text="Keyboard control",
+        check_keyboard_control = CTkCheckBox(frame_control, font=self.button_font, text=i18n.t("keyboard-control"),
                                              variable=keyboard_control, onvalue="True", offvalue="False")
         if not keyboard_control:
             check_mouse_control.deselect()
@@ -105,7 +140,7 @@ class App(CTk):
         button_right.configure(command=partial(self.readKey, button_right))
         button_right.pack(side=RIGHT, padx=5, pady=5)
 
-        label_right = CTkLabel(frame_right, text="Move right", justify=LEFT, font=self.button_font)
+        label_right = CTkLabel(frame_right, text=i18n.t('move-right'), justify=LEFT, font=self.button_font)
         label_right.pack(fill=X, padx=5, pady=10)
 
         frame_left = CTkFrame(frame_control, fg_color='transparent')
@@ -115,15 +150,16 @@ class App(CTk):
         button_left.configure(command=partial(self.readKey, button_left))
         button_left.pack(side=RIGHT, padx=5, pady=5)
 
-        label_left = CTkLabel(frame_left, text="Move left", justify=LEFT, font=self.button_font)
+        label_left = CTkLabel(frame_left, text=i18n.t('move-left'), justify=LEFT, font=self.button_font)
         label_left.pack(fill=X, padx=5, pady=10)
 
         frame_save = CTkFrame(menu_frame)
         frame_save.pack(fill=X, padx=5, pady=15)
 
-        save_button = CTkButton(frame_save, text="Save",
+        save_button = CTkButton(frame_save, text=i18n.t('save'),
                                 font=self.button_font,
-                                command=partial(self.onSaveSettings, slider_volume, check_mouse_control, check_keyboard_control,
+                                command=partial(self.onSaveSettings, slider_volume, check_mouse_control,
+                                                check_keyboard_control,
                                                 button_right, button_left))
         save_button.pack(fill=X, padx=5, pady=5)
 
@@ -139,7 +175,8 @@ class App(CTk):
         button.configure(text=event.keysym)
         self.unbind("<Key>")
 
-    def onSaveSettings(self, volume: CTkSlider, mouse_control: CTkCheckBox, keyboard_control: CTkCheckBox, right: CTkButton, left: CTkButton):
+    def onSaveSettings(self, volume: CTkSlider, mouse_control: CTkCheckBox, keyboard_control: CTkCheckBox,
+                       right: CTkButton, left: CTkButton):
         print(volume.get(), mouse_control.get(), keyboard_control.get(), right.cget("text"), left.cget("text"))
         self.settings.updateVolume(int(volume.get()))
         self.settings.updateMouseControl(mouse_control.get())
@@ -150,7 +187,7 @@ class App(CTk):
 
     def showMenuLevels(self):
         menu_frame = self.__createMenuFrame()
-        top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, "Levels")
+        top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, i18n.t('levels'))
 
         levels_frame = CTkScrollableFrame(menu_frame, height=100)
         levels_frame.pack(fill=X, padx=5, pady=5)
@@ -207,7 +244,7 @@ class App(CTk):
         return menu_frame
 
     def onExit(self):
-        answer = confirmation(title='Confirmation', message='Are you sure that you want to quit?')
+        answer = confirmation(title=i18n.t('confirmation'), message=i18n.t('ask-quit'))
         if answer:
             self.destroy()
 

@@ -151,7 +151,7 @@
 # button.pack(padx=20, pady=20)
 #
 # root.mainloop()
-import i18n
+import i18n_config
 i18n.set('locale', 'ua')
 i18n.set('filename_format', '{locale}.{format}')
 i18n.set('file_format', 'json')

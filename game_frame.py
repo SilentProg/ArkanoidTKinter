@@ -1,5 +1,7 @@
 import json
 import os
+
+import i18n
 from customtkinter import CTkFrame, CTkLabel, CTkFont, CTkButton, CTkImage
 from tkinter import Canvas
 from tkinter.messagebox import askquestion
@@ -7,7 +9,7 @@ from PIL import Image
 import pygame
 import configparser
 import re
-
+import i18n_config
 
 class GameBoard(CTkFrame):
     def __init__(self, master, show_ui, level_name, pause: bool = False, **kwargs):
@@ -130,7 +132,7 @@ class GameBoard(CTkFrame):
     def nextLevel(self):
         if self.levels.getLevelNumber() + 1 > len(self.levels.levels):
             return
-        ans = askquestion("Наступний рівень", "Перейти до наступного рівня?")
+        ans = askquestion(i18n.t('next-level'), i18n.t('ask-next-level'))
         if ans == 'yes':
             self.level_path = f"levels/level_{self.levels.getLevelNumber() + 1}.json"
             self.restart(next_level=True)
@@ -248,7 +250,7 @@ class GameBoard(CTkFrame):
 
         if len(self.bricks) == 0:
             self.channel.play(self.level_confirm_sound)
-            self.canvas.create_text(self.size_w // 2, self.size_h // 2, text='You WIN!', fill='green', font=(None, 50))
+            self.canvas.create_text(self.size_w // 2, self.size_h // 2, text=i18n.t('win'), fill='green', font=(None, 50))
             self.carriage_stop = False
             self.levels.updateLastFromPath(self.level_path, self.points)
             self.nextLevel()
@@ -268,7 +270,7 @@ class GameBoard(CTkFrame):
                 self.channel.play(self.level_failed_sound)
                 self.hp -= 1
                 self.level_info_frame.hpHit()
-                self.canvas.create_text(self.size_w // 2, self.size_h // 2, text='GAME OVER', fill='red',
+                self.canvas.create_text(self.size_w // 2, self.size_h // 2, text=i18n.t('game-over'), fill='red',
                                         font=(None, 50))
                 self.carriage_stop = False
 
@@ -338,25 +340,25 @@ class LevelInfoFrame(CTkFrame):
         self.initHp()
 
     def initUI(self):
-        button_menu = CTkButton(self, text="Menu", font=self.button_font, height=40, command=self.returnToMenu)
+        button_menu = CTkButton(self, text=i18n.t('menu'), font=self.button_font, height=40, command=self.returnToMenu)
         button_menu.grid(row=0, column=0, padx=10, pady=10)
 
-        button_pause = CTkButton(self, text="P", font=self.button_font, width=40, height=40,
+        button_pause = CTkButton(self, text=i18n.t('pause-symbol'), font=self.button_font, width=40, height=40,
                                  command=self.board.togglePause)
         button_pause.grid(row=0, column=1, padx=10, pady=10)
 
-        button_restart = CTkButton(self, text="R", font=self.button_font, width=40, height=40,
+        button_restart = CTkButton(self, text=i18n.t('restart-symbol'), font=self.button_font, width=40, height=40,
                                    command=self.board.restart)
         button_restart.grid(row=0, column=2, padx=10, pady=10)
 
-        self.level_label = CTkLabel(self, text="Level: {} |".format(self.board.levels.getLevelNumber() + 1),
+        self.level_label = CTkLabel(self, text=i18n.t('level-number', n=str(self.board.levels.getLevelNumber() + 1)),
                                     font=self.level_font)
         self.level_label.grid(row=0, column=3, padx=10, pady=10)
 
-        self.level_score = CTkLabel(self, text="Score: {} |".format(0), font=self.level_font)
+        self.level_score = CTkLabel(self, text=i18n.t('score-count', n='0'), font=self.level_font)
         self.level_score.grid(row=0, column=4, padx=10, pady=10)
 
-        hp_label = CTkLabel(self, text="HP:", font=self.level_font)
+        hp_label = CTkLabel(self, text=i18n.t('hp-double-dot'), font=self.level_font)
         hp_label.grid(row=0, column=5, padx=10, pady=10)
         self.initHp()
 
@@ -394,10 +396,10 @@ class LevelInfoFrame(CTkFrame):
         # self.hpHit()
 
     def setLevel(self, level):
-        self.level_label.configure(text="Level: {} |".format(str(level)))
+        self.level_label.configure(text=i18n.t('level-number', n=str(level)))
 
     def setScore(self, score):
-        self.level_score.configure(text="Score: {} |".format(str(score)))
+        self.level_score.configure(text=i18n.t('score-count', n=str(score)))
 
 
 class Levels:

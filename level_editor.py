@@ -1,3 +1,6 @@
+import i18n
+
+import i18n_config
 from customtkinter import BOTH, CTkToplevel, CTkLabel, CTkButton
 from tkinter import Menu
 from tkinter.filedialog import askopenfilename
@@ -25,7 +28,7 @@ class LevelEditor(CTkToplevel):
         y = (screen_height // 2) - (self.app_height // 2)
 
         self.geometry(f"{self.app_width}x{self.app_height}+{x}+{y}")
-        self.title("Arkanoid | Level builder")
+        self.title(i18n.t('level-editor-title'))
         self.resizable(False, False)
 
     def initMainMenu(self):
@@ -35,15 +38,15 @@ class LevelEditor(CTkToplevel):
         fileMenu = Menu(menubar, tearoff=0)
         levelMenu = Menu(menubar, tearoff=0)
 
-        levelMenu.add_command(label="Новий рівень", command=self.newLevel)
-        levelMenu.add_command(label="Завантажити рівень", command=self.loadLevel)
+        levelMenu.add_command(label=i18n.t('new-level'), command=self.newLevel)
+        levelMenu.add_command(label=i18n.t('load-level'), command=self.loadLevel)
 
-        fileMenu.add_cascade(label="Рівень", menu=levelMenu)
-        fileMenu.add_command(label="Вихід", command=self.onExit)
-        menubar.add_cascade(label="Файл", menu=fileMenu)
+        fileMenu.add_cascade(label=i18n.t('level'), menu=levelMenu)
+        fileMenu.add_command(label=i18n.t('quit'), command=self.onExit)
+        menubar.add_cascade(label=i18n.t('menu-file'), menu=fileMenu)
 
     def onExit(self):
-        answer = ConfirmDialog(title='Confirmation', message='Are you sure that you want to quit?')
+        answer = ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-quit'))
         if answer:
             self.destroy()
 
@@ -53,7 +56,7 @@ class LevelEditor(CTkToplevel):
             self.current_page.pack(fill=BOTH, expand=True)
 
         if self.current_page:
-            answer = ConfirmDialog(title='Confirmation', message='Are you sure that you want to create new level?')
+            answer = ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-new-level'))
             if answer:
                 self.current_page.destroy()
                 create()
@@ -64,14 +67,14 @@ class LevelEditor(CTkToplevel):
         import os
 
         def load():
-            file_path = askopenfilename(title="Load level", initialdir="{}\\levels".format(os.getcwd()),
-                                        filetypes=(("Level files", "*.json"), ('All files', '*.*')))
+            file_path = askopenfilename(title=i18n.t('load-level'), initialdir="{}\\levels".format(os.getcwd()),
+                                        filetypes=((i18n.t('level-files'), "*.json"), ('All files', '*.*')))
             if file_path:
                 self.current_page = LevelBuilder(self, file_path, width=self.app_width, height=self.app_height)
                 self.current_page.pack(fill=BOTH, expand=True)
 
         if self.current_page:
-            answer = ConfirmDialog(title='Confirmation', message='Are you sure that you want to load level?')
+            answer = ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-load-level'))
             if answer:
                 self.current_page.destroy()
                 load()

@@ -1,5 +1,6 @@
 from tkinter.simpledialog import askstring
 
+import i18n
 from PIL import Image
 from customtkinter import CTkFrame, LEFT, CTkButton, CTkLabel, TOP, CTkFont, X, CTkEntry, StringVar, RIGHT, Y, \
     CTkOptionMenu
@@ -8,7 +9,7 @@ from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showwarning
 from game_frame import GameBoard
 import json
-
+import i18n_config
 
 class LBControlPanel(CTkFrame):
     def __init__(self, master, board: GameBoard, **kwargs):
@@ -37,7 +38,7 @@ class LBControlPanel(CTkFrame):
         frame_bricks = CTkFrame(self, width=self.winfo_reqwidth() - 10, height=200)
         frame_bricks.pack(fill=X, side=TOP, padx=5, pady=5)
 
-        label_list_colors = CTkLabel(frame_bricks, text="Choose color:", width=frame_bricks.winfo_reqwidth() - 10,
+        label_list_colors = CTkLabel(frame_bricks, text=i18n.t('choose-color'), width=frame_bricks.winfo_reqwidth() - 10,
                                      font=self.font_small, corner_radius=50)
         label_list_colors.pack(fill=X, padx=5, pady=5)
 
@@ -47,18 +48,18 @@ class LBControlPanel(CTkFrame):
         self.frame_current_color = CTkFrame(frame_color, width=30, height=30, fg_color='white')
         self.frame_current_color.pack(padx=5, pady=5, side=LEFT)
 
-        button_choose_color = CTkButton(frame_color, text="Choose", width=100, command=self.chooseColor)
+        button_choose_color = CTkButton(frame_color, text=i18n.t('choose'), width=100, command=self.chooseColor)
         button_choose_color.pack(fill=X, padx=5, pady=5)
 
         button_add_brick = CTkButton(frame_bricks,
-                                     text="Add brick",
+                                     text=i18n.t('add-brick'),
                                      command=self.addBrick)
         button_add_brick.pack(fill=X, padx=5, pady=5)
 
         frame_walls = CTkFrame(self, width=self.winfo_reqwidth() - 10)
         frame_walls.pack(fill=X, padx=5, pady=5)
 
-        label_wall_width = CTkLabel(frame_walls, text="Wall width x height", font=self.font_small,
+        label_wall_width = CTkLabel(frame_walls, text=i18n.t('wall-w-h'), font=self.font_small,
                                     width=frame_walls.winfo_reqwidth() - 10)
         label_wall_width.pack(fill=X, padx=5, pady=5)
 
@@ -69,14 +70,14 @@ class LBControlPanel(CTkFrame):
         entry_wall_height.pack(fill=X, padx=5, pady=5)
 
         button_add_brick = CTkButton(frame_walls,
-                                     text="Add wall",
+                                     text=i18n.t('add-wall'),
                                      command=self.addWall)
         button_add_brick.pack(fill=X, padx=5, pady=5)
 
         frame_ball = CTkFrame(self, width=self.winfo_reqwidth() - 10)
         frame_ball.pack(fill=X, padx=5, pady=5)
 
-        label_ball_color = CTkLabel(frame_ball, text="Ball color", font=self.font_small,
+        label_ball_color = CTkLabel(frame_ball, text=i18n.t('ball-color'), font=self.font_small,
                                     width=frame_ball.winfo_reqwidth() - 10)
         label_ball_color.pack(fill=X, padx=5, pady=5)
 
@@ -86,14 +87,14 @@ class LBControlPanel(CTkFrame):
         self.frame_color_ball = CTkFrame(frame_color_ball_container, width=30, height=30, fg_color='white')
         self.frame_color_ball.pack(padx=5, pady=5, side=LEFT)
 
-        button_choose_ball_color = CTkButton(frame_color_ball_container, text="Choose", width=100,
+        button_choose_ball_color = CTkButton(frame_color_ball_container, text=i18n.t('choose'), width=100,
                                              command=self.chooseBallColor)
         button_choose_ball_color.pack(fill=X, padx=5, pady=5)
 
         frame_carriage = CTkFrame(self, width=self.winfo_reqwidth() - 10)
         frame_carriage.pack(fill=X, padx=5, pady=5)
 
-        label_carriage_color = CTkLabel(frame_carriage, text="Carriage color", font=self.font_small,
+        label_carriage_color = CTkLabel(frame_carriage, text=i18n.t('carriage-color'), font=self.font_small,
                                         width=frame_carriage.winfo_reqwidth() - 10)
         label_carriage_color.pack(fill=X, padx=5, pady=5)
 
@@ -103,14 +104,14 @@ class LBControlPanel(CTkFrame):
         self.frame_color_carriage = CTkFrame(frame_color_carriage_container, width=30, height=30, fg_color='white')
         self.frame_color_carriage.pack(padx=5, pady=5, side=LEFT)
 
-        button_choose_carriage_color = CTkButton(frame_color_carriage_container, text="Choose", width=100,
+        button_choose_carriage_color = CTkButton(frame_color_carriage_container, text=i18n.t('choose'), width=100,
                                                  command=self.chooseCarriageColor)
         button_choose_carriage_color.pack(fill=X, padx=5, pady=5)
 
         frame_hp = CTkFrame(self)
         frame_hp.pack(fill=X, padx=5, pady=5)
 
-        option_menu_hp = CTkOptionMenu(frame_hp, values=["HP: 1", "HP: 2", "HP: 3"], variable=self.option_menu_str)
+        option_menu_hp = CTkOptionMenu(frame_hp, values=[i18n.t('hp-double-dot-number', hp='1'), i18n.t('hp-double-dot-number', hp='2'), i18n.t('hp-double-dot-number', hp='3')], variable=self.option_menu_str)
         option_menu_hp.pack(fill=X, padx=5, pady=5)
 
         frame_control_buttons = CTkFrame(self)
@@ -120,11 +121,11 @@ class LBControlPanel(CTkFrame):
                                      command=self.tryReset)
         button_try_reset.pack(fill=X, padx=5, pady=5)
 
-        button_save = CTkButton(frame_control_buttons, text='Save', command=self.saveLevel)
+        button_save = CTkButton(frame_control_buttons, text=i18n.t('save'), command=self.saveLevel)
         button_save.pack(fill=X, padx=5, pady=5)
 
         self.context_menu = Menu(self, tearoff=0)
-        self.context_menu.add_command(label='Delete', command=self.deleteObj)
+        self.context_menu.add_command(label=i18n.t('delete'), command=self.deleteObj)
         self.canvas.bind("<Button-3>", self.show_context_menu)
 
         def validate_input(line):
@@ -142,13 +143,13 @@ class LBControlPanel(CTkFrame):
 
     def tryReset(self):
 
-        if self.button_try_reset_str.get() == 'Try':
+        if self.button_try_reset_str.get() == i18n.t('try'):
             self.level = self.level_const
-            self.button_try_reset_str.set('Reset')
+            self.button_try_reset_str.set(i18n.t('reset'))
             self.board.togglePause()
         else:
             self.level_const = self.level
-            self.button_try_reset_str.set('Try')
+            self.button_try_reset_str.set(i18n.t('try'))
             self.board.restart()
             self.board.togglePause()
 
@@ -172,7 +173,7 @@ class LBControlPanel(CTkFrame):
 
     def saveLevel(self):
         self.updateAllObjs()
-        file_name = askstring("Level save", "Enter level name:", parent=self.master)
+        file_name = askstring(i18n.t('level-save'), i18n.t('ask-level-title'), parent=self.master)
         # dialog = CTkInputDialog(text="Type the level title:", title="Save level")
         json_string = json.dumps(self.level, indent=4)
         if file_name:
@@ -196,7 +197,7 @@ class LBControlPanel(CTkFrame):
 
     def addWall(self):
         if not self.wall_height.get() or not self.wall_width.get():
-            showwarning("Warning", "Width or height incorrect!")
+            showwarning(i18n.t('Warning'), i18n.t('invalid-size'))
             return
         print("wall_added")
         wall_w = int(self.wall_width.get())
@@ -221,19 +222,19 @@ class LBControlPanel(CTkFrame):
         return x, y, x + w, y + h
 
     def chooseColor(self):
-        self.current_color = askcolor(title="Choose color for brick")[1]
+        self.current_color = askcolor(title=i18n.t('choose-color-brick'))[1]
         if self.current_color:
             self.frame_current_color.configure(fg_color=self.current_color)
 
     def chooseBallColor(self):
-        self.ball_color = askcolor(title="Choose color for brick")[1]
+        self.ball_color = askcolor(title=i18n.t('choose-color-ball'))[1]
         if self.ball_color:
             self.frame_color_ball.configure(fg_color=self.ball_color)
             self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.ball_color)
             self.level['ball']['color'] = str(self.ball_color)
 
     def chooseCarriageColor(self):
-        self.carriage_color = askcolor(title="Choose color for brick")[1]
+        self.carriage_color = askcolor(title=i18n.t('choose-color-carriage'))[1]
         if self.carriage_color:
             self.frame_color_carriage.configure(fg_color=self.carriage_color)
             self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.carriage_color)
@@ -277,11 +278,11 @@ class LBControlPanel(CTkFrame):
 
     def updateAllObjs(self):
         hp = self.option_menu_str.get()
-        if hp == "HP: 1":
+        if hp == i18n.t('hp-double-dot-number', hp=1):
             self.level['hp'] = 1
-        elif hp == "HP: 2":
+        elif hp == i18n.t('hp-double-dot-number', hp=2):
             self.level['hp'] = 1
-        elif hp == "HP: 3":
+        elif hp == i18n.t('hp-double-dot-number', hp=3):
             self.level['hp'] = 3
         self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.carriage_color)
         self.level['carriage']['color'] = str(self.carriage_color)
