@@ -26,7 +26,7 @@ class LBControlPanel(CTkFrame):
         self.frame_current_color = None
         self.wall_width = StringVar(value='100')
         self.wall_height = StringVar(value='40')
-        self.button_try_reset_str = StringVar(value='Try')
+        self.button_try_reset_str = StringVar(value=i18n.t('try'))
         self.option_menu_str = StringVar(value=board.hp)
         self.level: {} = board.level
         self.level_const: {} = board.level
