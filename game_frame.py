@@ -11,6 +11,7 @@ import configparser
 import re
 import i18n_config
 
+
 class GameBoard(CTkFrame):
     def __init__(self, master, show_ui, level_name, pause: bool = False, **kwargs):
         super().__init__(master, **kwargs)
@@ -250,7 +251,8 @@ class GameBoard(CTkFrame):
 
         if len(self.bricks) == 0:
             self.channel.play(self.level_confirm_sound)
-            self.canvas.create_text(self.size_w // 2, self.size_h // 2, text=i18n.t('win'), fill='green', font=(None, 50))
+            self.canvas.create_text(self.size_w // 2, self.size_h // 2, text=i18n.t('win'), fill='green',
+                                    font=(None, 50))
             self.carriage_stop = False
             self.levels.updateLastFromPath(self.level_path, self.points)
             self.nextLevel()

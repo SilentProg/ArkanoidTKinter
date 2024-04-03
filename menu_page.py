@@ -22,6 +22,7 @@ class MenuPage(CTkFrame):
         self.elements_height = 40
         self.title = title
         self.show_back = show_back
+        self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
         self._init_components()
 
     def _init_components(self):
@@ -63,6 +64,10 @@ class MenuPage(CTkFrame):
             self.error_frame.pack(after=self.top_frame, fill=BOTH, pady=5, padx=5)
         else:
             self.error_frame.pack(after=self.menu_label, fill=BOTH, pady=5, padx=5)
+
+    def set_on_back(self, func):
+        self.on_back = func
+        self.button_back.configure(command=partial(func))
 
     def show_error(self, message):
         self.error_label.configure(text_color='red')
