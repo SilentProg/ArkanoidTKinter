@@ -1,6 +1,8 @@
 import time
+from io import BytesIO
 from tkinter import filedialog
 
+import requests
 from customtkinter import CTkFrame, CTkLabel, CTkImage, LEFT, CTkFont, CTkButton
 from PIL import Image
 
@@ -14,6 +16,9 @@ class AccountInfo(CTkFrame):
         super().__init__(master, **kwargs)
         self.font = CTkFont(family="Helvetica", size=25, weight="bold")
         self.user = user
+        self.user_info = firebase.auth.get_account_info(self.user['idToken'])
+        print(self.user)
+        print(self.user_info)
         self._init_components()
 
     def _init_components(self):
@@ -42,11 +47,19 @@ class AccountInfo(CTkFrame):
 
         if file_path:
             print(self.user)
-            storage_name = self.user['localId'] + "-" + str(time.time())
-            firebase.storage.child('avatars').child().put()
-            print("Selected file:", file_path)
-        else:
-            print("File selection canceled.")
+            storage_name = self.user['localId'] + "-" + str(time.time()) + "." + file_path.split(".")[-1]
+            firebase.storage.child('avatars').child(storage_name).put(file_path, self.user['idToken'])
+            url = firebase.storage.child('avatars').child(storage_name).get_url(self.user['idToken'])
+            firebase.auth.update_profile(self.user['idToken'], photo_url=url)
+
+            self.load_image(url)
+
+    def load_image(self, url):
+        response = requests.get(url)
+        image_data = response.content
+        image = Image.open(BytesIO(image_data))
+        photo = CTkImage(light_image=image, dark_image=image, size=(35, 35))
+        self.avatar.config(image=photo)
 
     def show(self):
         self.place(x=10, y=10)
