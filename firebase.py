@@ -54,6 +54,7 @@ def restore_password(email: str, onerror=lambda e: print(e), onsuccess=lambda r:
     else:
         onsuccess(result)
 
+
 # sign_up('nice.savonik@gmail.com', 'gavno228', 'Silent')
 # sign_in('nice.savonik@gmail.com', 'gavno228')
 # restore_password('nice.savonik@gmail.com')

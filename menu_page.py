@@ -1,7 +1,5 @@
 from functools import partial
-
 from customtkinter import CTkFrame, CTkLabel, CTkFont, LEFT, X, BOTH, CTkButton
-
 from constants import APP_WIDTH, APP_HEIGHT
 
 
@@ -41,14 +39,14 @@ class MenuPage(CTkFrame):
                                        font=CTkFont(family="Helvetica", size=20, weight="bold"))
             self.menu_label.pack(padx=20, pady=10)
 
-        self.error_frame = CTkFrame(master=self, width=self.elements_width)
+        self.error_frame = CTkFrame(master=self)
 
-        self.error_label = CTkLabel(master=self.error_frame, width=self.elements_width, text_color='red',
+        self.error_label = CTkLabel(master=self.error_frame, text_color='red',
                                     justify=LEFT,
                                     font=CTkFont(family="Helvetica", weight="bold", size=14))
-        self.error_label.pack(pady=5, padx=5)
+        self.error_label.pack(padx=5, pady=5)
 
-        self.error_frame.pack(fill=BOTH, expand=1, padx=20, pady=5)
+        self.error_frame.pack(fill=X, padx=20, pady=5)
         self.error_frame.pack_forget()
 
     def show_result(self, message):
@@ -58,12 +56,12 @@ class MenuPage(CTkFrame):
     def show_message(self, message):
         self.error_frame.pack_forget()
         self.error_label.configure(text=message)
-        if self.error_label.cget('text_color') != 'red' or self.error_frame.cget('text_color') != 'green':
+        if self.error_label.cget('text_color') != 'red' and self.error_label.cget('text_color') != 'green':
             self.error_label.configure(text_color='#dce4ee')
         if self.show_back:
-            self.error_frame.pack(after=self.top_frame, fill=BOTH, pady=5, padx=5)
+            self.error_frame.pack(after=self.top_frame, fill=X, pady=5, padx=20)
         else:
-            self.error_frame.pack(after=self.menu_label, fill=BOTH, pady=5, padx=5)
+            self.error_frame.pack(after=self.menu_label, fill=X, pady=5, padx=20)
 
     def set_on_back(self, func):
         self.on_back = func

@@ -1,11 +1,14 @@
+from tkinter import StringVar
+
 import i18n
-from customtkinter import CTkFrame, CTkLabel, CTkFont, CTkEntry, CTkButton, LEFT, BOTH
+from customtkinter import CTkFrame, CTkLabel, CTkFont, CTkEntry, CTkButton, LEFT, BOTH, CTkCheckBox
 
 import firebase
 from functools import partial
 
 import i18n_config
 from menu_page import MenuPage
+from session import Session
 
 
 class LoginPage(MenuPage):
@@ -15,11 +18,15 @@ class LoginPage(MenuPage):
     sign_up_label: CTkLabel = None
     forget_label: CTkLabel = None
     sign_in_button: CTkButton = None
+    remember_me_checkbox: CTkCheckBox = None
+    remember_me_var: StringVar = None
+    session: Session = None
     on_register = lambda self, event: print('On register click')
     on_success = lambda self, user: print(f'Auth successful: {user}')
 
     def __init__(self, master: any, **kwargs):
         super().__init__(master, i18n.t('sign-in'), False, **kwargs)
+        self.session = Session()
 
     def _init_components(self):
         super()._init_components()
@@ -31,6 +38,14 @@ class LoginPage(MenuPage):
         self.password_entry = CTkEntry(master=self, width=self.elements_width, height=self.elements_height,
                                        placeholder_text=i18n.t('password'), show='*')
         self.password_entry.pack(padx=0, pady=5)
+
+        self.remember_me_var = StringVar(value='False')
+        self.remember_me_checkbox = CTkCheckBox(self, font=CTkFont(family="Helvetica", size=14),
+                                                text=i18n.t("remember-me"),
+                                                width=self.elements_width, height=self.elements_height,
+                                                variable=self.remember_me_var, onvalue="True", offvalue="False")
+
+        self.remember_me_checkbox.pack(padx=0, pady=5)
 
         self.reg_frame = CTkFrame(master=self)
 
@@ -68,4 +83,21 @@ class LoginPage(MenuPage):
         self.error_frame.pack_forget()
         firebase.sign_in(self.email_entry.get(), self.password_entry.get(),
                          onerror=lambda e: self.show_error(e),
-                         onsuccess=self.on_success)
+                         onsuccess=self.on_auth_success)
+
+    def on_auth_success(self, user):
+        if self.remember_me_var.get() == 'True':
+            self.session.write_credentials({
+                'email': self.email_entry.get().encode(),
+                'password': self.password_entry.get().encode()
+            })
+        self.on_success(user)
+
+    def check_session(self):
+        if not self.session.has():
+            return False
+        credentials = self.session.read_credentials()
+        self.email_entry.insert(0, credentials['email'])
+        self.password_entry.insert(0, credentials['password'])
+        self.sign_in()
+        return True

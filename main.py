@@ -1,8 +1,9 @@
 import i18n
 import i18n_config
-from customtkinter import CTk, CTkFrame
+from customtkinter import CTk, CTkFrame, END
 from tkinter.messagebox import askyesno as confirmation
 
+from account_info import AccountInfo
 from levels_page import LevelsPage
 from game_frame import GameBoard
 from level_editor import LevelEditor
@@ -11,6 +12,7 @@ from login_page import LoginPage
 from constants import APP_WIDTH, APP_HEIGHT
 from menu_page import MenuPage
 from register_page import RegisterPage
+from session import Session
 from settings_page import SettingsPage
 from main_menu_page import MainMenuPage
 
@@ -24,6 +26,7 @@ class App(CTk):
     game: GameBoard = None
     login_page: LoginPage = None
     register_page: RegisterPage = None
+    account_info: AccountInfo = None
     user = None
 
     def __init__(self):
@@ -51,7 +54,8 @@ class App(CTk):
         self.mainMenuPage.add_button(i18n.t('quit'), self.onExit)
         self.mainMenuPage.init_buttons()
 
-        self.__show_page(self.login_page)
+        if not self.login_page.check_session():
+            self.__show_page(self.login_page)
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()
@@ -67,6 +71,18 @@ class App(CTk):
     def authUser(self, user):
         self.user = user
         self.__show_page(self.mainMenuPage)
+        self.account_info = AccountInfo(self, user)
+        self.account_info.set_on_logout(self.logout)
+        self.account_info.show()
+
+    def logout(self):
+        session = Session()
+        session.delete_credentials()
+        self.login_page.email_entry.delete(0, END)
+        self.login_page.password_entry.delete(0, END)
+        if self.account_info:
+            self.account_info.destroy()
+        self.__show_page(self.login_page)
 
     def regUser(self, user):
         self.user = user

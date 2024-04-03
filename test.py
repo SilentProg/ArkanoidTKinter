@@ -151,11 +151,27 @@
 # button.pack(padx=20, pady=20)
 #
 # root.mainloop()
-import i18n_config
-i18n.set('locale', 'ua')
-i18n.set('filename_format', '{locale}.{format}')
-i18n.set('file_format', 'json')
-i18n.load_path.append('locales')
-print(i18n.t('test'))
+# import i18n_config
+# i18n.set('locale', 'ua')
+# i18n.set('filename_format', '{locale}.{format}')
+# i18n.set('file_format', 'json')
+# i18n.load_path.append('locales')
+# print(i18n.t('test'))
+
+from cryptography.fernet import Fernet
+
+# Generate a key
+key = Fernet.generate_key()
+cipher_suite = Fernet(key)
+
+# Encrypt the original string
+original_string = b"Secret message"
+cipher_text = cipher_suite.encrypt(original_string)
+
+# Decrypt back to the original string
+decrypted_string = cipher_suite.decrypt(cipher_text)
+
+print("Original String:", original_string.decode())
+print("Decrypted String:", decrypted_string.decode())
 
 
