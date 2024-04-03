@@ -19,6 +19,7 @@
     "move-right": "Вправо",
     "move-left": "Вліво",
     "save": "Зберегти",
+    "saved": "Збережено",
     "delete": "Видалити",
     "levels": "Рівні",
     "level": "Рівень",
@@ -60,6 +61,15 @@
     "level-save": "Збереження рівня",
     "ask-level-title": "Введіть назву рівня:",
     "warning": "Попереждення",
-    "invalid-size": "Ширина або висота не вірні!"
+    "invalid-size": "Ширина або висота не вірні!",
+    "ERROR": "Непередбачувана помилка",
+    "INVALID_EMAIL": "Не коректна пошта!",
+    "INVALID_LOGIN_CREDENTIALS": "Дані не вірні!",
+    "EMAIL_EXISTS": "Пошта вже використовується!",
+    "WEAK_PASSWORD : Password should be at least 6 characters": "Пароль закороткий!",
+    "EMAIL_SEND": "Лист надіслано!",
+    "MISSING_EMAIL": "Введіть пошту!",
+    "PASSWORD_MISMATCH": "Паролі не співпадають!",
+    "MISSING_DATA": "Не всі дані!"
   }
 }

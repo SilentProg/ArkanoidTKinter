@@ -11,15 +11,22 @@ from customtkinter import CTk, CTkFrame, CTkButton, CTkLabel, CTkFont, LEFT, X, 
 from tkinter.messagebox import askyesno as confirmation
 from game_frame import GameBoard, Levels, Settings
 from level_editor import LevelEditor
+import firebase
+from login_page import LoginPage
+from constants import APP_WIDTH, APP_HEIGHT
+from register_page import RegisterPage
+from settings_page import SettingsPage
 
 
 class App(CTk):
-    app_width = 1000
-    app_height = 640
+    app_width = APP_WIDTH
+    app_height = APP_HEIGHT
     menu_frame: CTkFrame = None
     main_menu_frame: CTkFrame = None
     current_menu: CTkFrame = None
     game = -1
+    login_page: LoginPage = None
+    register_page: RegisterPage = None
 
     def __init__(self):
         super().__init__()
@@ -27,8 +34,15 @@ class App(CTk):
         self.initUI()
         self.levels = Levels()
         self.settings = Settings()
+        self.login_page = LoginPage(self)
+        self.login_page.set_on_register(self.showSignUp)
+        self.register_page = RegisterPage(self)
+        self.register_page.set_on_login(self.showSignIn)
         # self.initMainMenu()
-        self.showSignUp()
+        # self.showSignIn()
+        # self.showSignUp()
+        self.settings_page = SettingsPage(self)
+        self.show_page(self.settings_page)
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()
@@ -70,159 +84,112 @@ class App(CTk):
         self.menu_frame = menu_frame
 
     def showSignIn(self):
-        menu_frame = self.__createMenuFrame()
-        menu_label = CTkLabel(menu_frame, text=i18n.t('sign-in'), font=CTkFont(family="Helvetica", size=36, weight="bold"))
-        menu_label.pack(padx=20, pady=10)
+        if self.menu_frame:
+            self.menu_frame.place_forget()
 
-        button_width = menu_frame.winfo_reqwidth() - 40
-        button_height = 40
-
-        email_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height, placeholder_text=i18n.t('email'))
-        email_entry.pack(padx=0, pady=5)
-
-        password_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
-                                  placeholder_text=i18n.t('password'), show='*')
-        password_entry.pack(padx=0, pady=5)
-
-        reg_frame = CTkFrame(master=menu_frame)
-
-        sign_up_label = CTkLabel(reg_frame, text=i18n.t('sign-up'), cursor="hand2", font=CTkFont(family="Helvetica", size=14, underline=True))
-        sign_up_label.pack(pady=5, padx=5, side=LEFT)
-
-        forget_label = CTkLabel(reg_frame, text=i18n.t('forget-password'), cursor="hand2", font=CTkFont(family="Helvetica", size=14, underline=True))
-        forget_label.pack(pady=5, padx=5, side=LEFT)
-
-        reg_frame.pack(fill=BOTH, expand=1, padx=20, pady=5)
-
-        sign_in_button = CTkButton(menu_frame, text=i18n.t('sign-in-process'), cursor="hand2", width=button_width, height=button_height,
-                                   font=self.button_font)
-        sign_in_button.pack(padx=20, pady=10)
+        self.menu_frame = self.login_page
+        self.menu_frame.show()
 
     def showSignUp(self):
-        menu_frame = self.__createMenuFrame()
-        menu_label = CTkLabel(menu_frame, text=i18n.t('sign-up'),
-                              font=CTkFont(family="Helvetica", size=36, weight="bold"))
-        menu_label.pack(padx=20, pady=10)
-
-        button_width = menu_frame.winfo_reqwidth() - 40
-        button_height = 40
-
-        username_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
-                               placeholder_text=i18n.t('username'))
-        username_entry.pack(padx=0, pady=5)
-
-        email_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
-                               placeholder_text=i18n.t('email'))
-        email_entry.pack(padx=0, pady=5)
-
-        password_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
-                                  placeholder_text=i18n.t('password'), show='*')
-        password_entry.pack(padx=0, pady=5)
-
-        password_confirm_entry = CTkEntry(master=menu_frame, width=button_width, height=button_height,
-                                  placeholder_text=i18n.t('password-confirm'), show='*')
-        password_confirm_entry.pack(padx=0, pady=5)
-
-        reg_frame = CTkFrame(master=menu_frame)
-
-        sign_up_label = CTkLabel(reg_frame, text=i18n.t('ask-have-account'), cursor="hand2",
-                                 font=CTkFont(family="Helvetica", size=14, underline=True))
-        sign_up_label.pack(pady=5, padx=5, side=LEFT)
-
-        reg_frame.pack(fill=BOTH, expand=1, padx=20, pady=5)
-
-        sign_in_button = CTkButton(menu_frame, text=i18n.t('sign-up-process'), cursor="hand2", width=button_width,
-                                   height=button_height,
-                                   font=self.button_font)
-        sign_in_button.pack(padx=20, pady=10)
-
-
-    def showMenuSetting(self):
-        menu_frame = self.__createMenuFrame()
-        top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, i18n.t('settings'))
-
-        volume_frame = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
-        volume_frame.pack(fill=X, padx=5, pady=5)
-
-        image = Image.open('assets/icons/voice.png')
-        icon = CTkImage(light_image=image, dark_image=image, size=(40, 40))
-        image_volume = CTkLabel(volume_frame, width=40, height=40, image=icon, text="")
-        image_volume.pack(side=LEFT, padx=5, pady=5)
-
-        volume = IntVar(value=self.settings.getVolume())
-        slider_volume = CTkSlider(volume_frame, from_=0, to=100, variable=volume, number_of_steps=5)
-        slider_volume.pack(fill=BOTH, padx=5, pady=20)
-
-        frame_control = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
-        frame_control.pack(fill=X, padx=5, pady=5)
-
-        mouse, keyboard = self.settings.getControlsType()
-        mouse_control = StringVar(value=str(mouse))
-        keyboard_control = StringVar(value=str(keyboard))
-        check_mouse_control = CTkCheckBox(frame_control, font=self.button_font, text=i18n.t("mouse-control"),
-                                          variable=mouse_control, onvalue="True", offvalue="False")
-        if not mouse_control:
-            check_mouse_control.deselect()
-        check_mouse_control.pack(fill=X, padx=5, pady=5)
-
-        check_keyboard_control = CTkCheckBox(frame_control, font=self.button_font, text=i18n.t("keyboard-control"),
-                                             variable=keyboard_control, onvalue="True", offvalue="False")
-        if not keyboard_control:
-            check_mouse_control.deselect()
-        check_keyboard_control.pack(fill=X, padx=5, pady=5)
-
-        frame_right = CTkFrame(frame_control, fg_color='transparent')
-        frame_right.pack(fill=X)
-
-        right, left = self.settings.getKeyboardKeys()
-        button_right = CTkButton(frame_right, width=40, height=40, text=right)
-        button_right.configure(command=partial(self.readKey, button_right))
-        button_right.pack(side=RIGHT, padx=5, pady=5)
-
-        label_right = CTkLabel(frame_right, text=i18n.t('move-right'), justify=LEFT, font=self.button_font)
-        label_right.pack(fill=X, padx=5, pady=10)
-
-        frame_left = CTkFrame(frame_control, fg_color='transparent')
-        frame_left.pack(fill=X)
-
-        button_left = CTkButton(frame_left, width=40, height=40, text=left)
-        button_left.configure(command=partial(self.readKey, button_left))
-        button_left.pack(side=RIGHT, padx=5, pady=5)
-
-        label_left = CTkLabel(frame_left, text=i18n.t('move-left'), justify=LEFT, font=self.button_font)
-        label_left.pack(fill=X, padx=5, pady=10)
-
-        frame_save = CTkFrame(menu_frame)
-        frame_save.pack(fill=X, padx=5, pady=15)
-
-        save_button = CTkButton(frame_save, text=i18n.t('save'),
-                                font=self.button_font,
-                                command=partial(self.onSaveSettings, slider_volume, check_mouse_control,
-                                                check_keyboard_control,
-                                                button_right, button_left))
-        save_button.pack(fill=X, padx=5, pady=5)
-
         if self.menu_frame:
-            self.menu_frame.destroy()
-            self.menu_frame = menu_frame
+            self.menu_frame.place_forget()
 
-    def readKey(self, button: CTkButton):
-        button.configure(text="...")
-        self.bind("<Key>", partial(self.updateButtonControl, button))
+        self.menu_frame = self.register_page
+        self.menu_frame.show()
 
-    def updateButtonControl(self, button, event):
-        button.configure(text=event.keysym)
-        self.unbind("<Key>")
+    def show_page(self, page):
+        if self.menu_frame:
+            self.menu_frame.place_forget()
 
-    def onSaveSettings(self, volume: CTkSlider, mouse_control: CTkCheckBox, keyboard_control: CTkCheckBox,
-                       right: CTkButton, left: CTkButton):
-        print(volume.get(), mouse_control.get(), keyboard_control.get(), right.cget("text"), left.cget("text"))
-        self.settings.updateVolume(int(volume.get()))
-        self.settings.updateMouseControl(mouse_control.get())
-        self.settings.updateKeyboardControl(keyboard_control.get())
-        self.settings.updateMoveRight(right.cget("text"))
-        self.settings.updateMoveLeft(left.cget("text"))
-        print("Save")
+        self.menu_frame = page
+        self.menu_frame.show()
+
+    # def showMenuSetting(self):
+    #     menu_frame = self.__createMenuFrame()
+    #     top_frame, button_back, menu_label = self.__createMenuTitle(menu_frame, i18n.t('settings'))
+    #
+    #     volume_frame = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
+    #     volume_frame.pack(fill=X, padx=5, pady=5)
+    #
+    #     image = Image.open('assets/icons/voice.png')
+    #     icon = CTkImage(light_image=image, dark_image=image, size=(40, 40))
+    #     image_volume = CTkLabel(volume_frame, width=40, height=40, image=icon, text="")
+    #     image_volume.pack(side=LEFT, padx=5, pady=5)
+    #
+    #     volume = IntVar(value=self.settings.getVolume())
+    #     slider_volume = CTkSlider(volume_frame, from_=0, to=100, variable=volume, number_of_steps=5)
+    #     slider_volume.pack(fill=BOTH, padx=5, pady=20)
+    #
+    #     frame_control = CTkFrame(menu_frame, width=self.main_menu_frame.winfo_reqwidth())
+    #     frame_control.pack(fill=X, padx=5, pady=5)
+    #
+    #     mouse, keyboard = self.settings.getControlsType()
+    #     mouse_control = StringVar(value=str(mouse))
+    #     keyboard_control = StringVar(value=str(keyboard))
+    #     check_mouse_control = CTkCheckBox(frame_control, font=self.button_font, text=i18n.t("mouse-control"),
+    #                                       variable=mouse_control, onvalue="True", offvalue="False")
+    #     if not mouse_control:
+    #         check_mouse_control.deselect()
+    #     check_mouse_control.pack(fill=X, padx=5, pady=5)
+    #
+    #     check_keyboard_control = CTkCheckBox(frame_control, font=self.button_font, text=i18n.t("keyboard-control"),
+    #                                          variable=keyboard_control, onvalue="True", offvalue="False")
+    #     if not keyboard_control:
+    #         check_mouse_control.deselect()
+    #     check_keyboard_control.pack(fill=X, padx=5, pady=5)
+    #
+    #     frame_right = CTkFrame(frame_control, fg_color='transparent')
+    #     frame_right.pack(fill=X)
+    #
+    #     right, left = self.settings.getKeyboardKeys()
+    #     button_right = CTkButton(frame_right, width=40, height=40, text=right)
+    #     button_right.configure(command=partial(self.readKey, button_right))
+    #     button_right.pack(side=RIGHT, padx=5, pady=5)
+    #
+    #     label_right = CTkLabel(frame_right, text=i18n.t('move-right'), justify=LEFT, font=self.button_font)
+    #     label_right.pack(fill=X, padx=5, pady=10)
+    #
+    #     frame_left = CTkFrame(frame_control, fg_color='transparent')
+    #     frame_left.pack(fill=X)
+    #
+    #     button_left = CTkButton(frame_left, width=40, height=40, text=left)
+    #     button_left.configure(command=partial(self.readKey, button_left))
+    #     button_left.pack(side=RIGHT, padx=5, pady=5)
+    #
+    #     label_left = CTkLabel(frame_left, text=i18n.t('move-left'), justify=LEFT, font=self.button_font)
+    #     label_left.pack(fill=X, padx=5, pady=10)
+    #
+    #     frame_save = CTkFrame(menu_frame)
+    #     frame_save.pack(fill=X, padx=5, pady=15)
+    #
+    #     save_button = CTkButton(frame_save, text=i18n.t('save'),
+    #                             font=self.button_font,
+    #                             command=partial(self.onSaveSettings, slider_volume, check_mouse_control,
+    #                                             check_keyboard_control,
+    #                                             button_right, button_left))
+    #     save_button.pack(fill=X, padx=5, pady=5)
+    #
+    #     if self.menu_frame:
+    #         self.menu_frame.destroy()
+    #         self.menu_frame = menu_frame
+    #
+    # def readKey(self, button: CTkButton):
+    #     button.configure(text="...")
+    #     self.bind("<Key>", partial(self.updateButtonControl, button))
+    #
+    # def updateButtonControl(self, button, event):
+    #     button.configure(text=event.keysym)
+    #     self.unbind("<Key>")
+    #
+    # def onSaveSettings(self, volume: CTkSlider, mouse_control: CTkCheckBox, keyboard_control: CTkCheckBox,
+    #                    right: CTkButton, left: CTkButton):
+    #     print(volume.get(), mouse_control.get(), keyboard_control.get(), right.cget("text"), left.cget("text"))
+    #     self.settings.updateVolume(int(volume.get()))
+    #     self.settings.updateMouseControl(mouse_control.get())
+    #     self.settings.updateKeyboardControl(keyboard_control.get())
+    #     self.settings.updateMoveRight(right.cget("text"))
+    #     self.settings.updateMoveLeft(left.cget("text"))
+    #     print("Save")
 
     def showMenuLevels(self):
         menu_frame = self.__createMenuFrame()
