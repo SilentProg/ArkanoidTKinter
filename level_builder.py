@@ -1,6 +1,8 @@
 from tkinter.simpledialog import askstring
 
 import i18n
+
+import firebase
 import i18n_config
 from PIL import Image
 from customtkinter import CTkFrame, LEFT, CTkButton, CTkLabel, TOP, CTkFont, X, CTkEntry, StringVar, RIGHT, Y, \
@@ -10,6 +12,7 @@ from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showwarning
 
 from constants import APP_WIDTH, APP_HEIGHT
+from custom_dialogs import PromptSwitchDialog
 from game_frame import GameBoard
 import json
 
@@ -180,9 +183,21 @@ class LBControlPanel(CTkFrame):
 
     def saveLevel(self):
         self.updateAllObjs()
-        file_name = askstring(i18n.t('level-save'), i18n.t('ask-level-title'), parent=self.master)
-        # dialog = CTkInputDialog(text="Type the level title:", title="Save level")
+        result = PromptSwitchDialog({'title': i18n.t('level-save'),
+                                     'entry_prompt': i18n.t('ask-level-title'),
+                                     'switch_prompt': i18n.t('ask-make-public')}
+                                    ).show()
+        file_name = result['entry_value']
+        public = result['switch_value']
         json_string = json.dumps(self.level, indent=4)
+        firebase.db.child("levels").push({
+            'creatorName': firebase.auth.current_user['displayName'],
+            'creatorLocalId': firebase.auth.current_user['localId'],
+            'public': public,
+            'title': file_name,
+            'level': self.level
+        })
+
         if file_name:
             with open("levels/{}.json".format(file_name), "w") as json_file:
                 json_file.write(json_string)

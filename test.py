@@ -229,7 +229,7 @@ class CustomDialog(ctk.CTkToplevel):
         self.label = ctk.CTkLabel(self.content_frame, text=entry_prompt, justify="left")
         self.entry = ctk.CTkEntry(self.content_frame, textvariable=self.var)
         self.ok_button = ctk.CTkButton(self.buttons_frame, text="OK", command=self.on_ok)
-        self.cancel_button = ctk.CTkButton(self.buttons_frame, text="Cancel", command=self.on_ok)
+        self.cancel_button = ctk.CTkButton(self.buttons_frame, text="Cancel", command=self.on_cancel)
         self.switch_var = ctk.StringVar(value="off")
         self.switch = ctk.CTkSwitch(self.content_frame, text=switch_prompt, command=self.switch_event,
                                     variable=self.switch_var, onvalue="on", offvalue="off")
@@ -245,6 +245,11 @@ class CustomDialog(ctk.CTkToplevel):
     def switch_event(self):
         print("switch toggled, current value:", self.switch_var.get())
 
+    def on_cancel(self, event=None):
+        self.var.set('')
+        self.switch_var.set('off')
+        self.on_ok()
+
     def on_ok(self, event=None):
         self.destroy()
 
@@ -252,7 +257,9 @@ class CustomDialog(ctk.CTkToplevel):
         self.wm_deiconify()
         self.entry.focus_force()
         self.wait_window()
-        return None if self.var.get() == '' else self.var.get()
+        return {'entry_value': None if self.var.get() == '' else self.var.get(),
+                'switch_value': False if self.switch_var.get() == 'off' else True
+                }
 
 
 class Example(ctk.CTkFrame):
@@ -269,17 +276,8 @@ class Example(ctk.CTkFrame):
         self.label.configure(text="You entered:\n" + string)
 
 
-# if __name__ == "__main__":
-#     root = ctk.CTk()
-#     root.wm_geometry("400x200")
-#     Example(root).pack(fill="both", expand=True)
-#     root.mainloop()
-
-
-# Assuming o is a dictionary
-o = {'title1': 'My Title'}
-
-# Replace o['title'] with 'title' if it doesn't exist or is empty
-title = o.get('title1', 'title1')
-
-print(title)  # Output will be 'My Title'
+if __name__ == "__main__":
+    root = ctk.CTk()
+    root.wm_geometry("400x200")
+    Example(root).pack(fill="both", expand=True)
+    root.mainloop()
