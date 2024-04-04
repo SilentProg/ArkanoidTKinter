@@ -12,7 +12,7 @@ from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showwarning
 
 from constants import APP_WIDTH, APP_HEIGHT
-from custom_dialogs import PromptSwitchDialog
+from custom_dialogs import PromptSwitchDialog, InfoDialog
 from game_frame import GameBoard
 import json
 
@@ -185,22 +185,27 @@ class LBControlPanel(CTkFrame):
         self.updateAllObjs()
         result = PromptSwitchDialog({'title': i18n.t('level-save'),
                                      'entry_prompt': i18n.t('ask-level-title'),
-                                     'switch_prompt': i18n.t('ask-make-public')}
+                                     'switch_prompt': i18n.t('ask-make-public'),
+                                     'ok_text': i18n.t('save')}
                                     ).show()
         file_name = result['entry_value']
         public = result['switch_value']
-        json_string = json.dumps(self.level, indent=4)
-        firebase.db.child("levels").push({
-            'creatorName': firebase.auth.current_user['displayName'],
-            'creatorLocalId': firebase.auth.current_user['localId'],
-            'public': public,
-            'title': file_name,
-            'level': self.level
-        })
+        # json_string = json.dumps(self.level, indent=4)
 
         if file_name:
-            with open("levels/{}.json".format(file_name), "w") as json_file:
-                json_file.write(json_string)
+            firebase.db.child("community-levels").push({
+                'creatorName': firebase.auth.current_user['displayName'],
+                'creatorLocalId': firebase.auth.current_user['localId'],
+                'public': public,
+                'title': file_name,
+                'level': self.level
+            })
+            InfoDialog({
+                'title': i18n.t('level-save'),
+                'message': i18n.t('level-saved')
+            }).show()
+            # with open("levels/{}.json".format(file_name), "w") as json_file:
+            #     json_file.write(json_string)
 
     def addBrick(self):
         print("block_added")

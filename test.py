@@ -180,6 +180,7 @@ import customtkinter as ctk
 
 import i18n
 import i18n_config
+from custom_dialogs import InfoDialog
 
 
 # app = customtkinter.CTk()
@@ -276,8 +277,14 @@ class Example(ctk.CTkFrame):
         self.label.configure(text="You entered:\n" + string)
 
 
-if __name__ == "__main__":
-    root = ctk.CTk()
-    root.wm_geometry("400x200")
-    Example(root).pack(fill="both", expand=True)
-    root.mainloop()
+# if __name__ == "__main__":
+#     root = ctk.CTk()
+#     root.wm_geometry("400x200")
+#     Example(root).pack(fill="both", expand=True)
+#     root.mainloop()
+
+
+InfoDialog({
+            'title': i18n.t('level-save'),
+            'message': i18n.t('level-saved')
+        }).show()
