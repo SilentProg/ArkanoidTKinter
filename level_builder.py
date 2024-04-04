@@ -1,15 +1,18 @@
 from tkinter.simpledialog import askstring
 
 import i18n
+import i18n_config
 from PIL import Image
 from customtkinter import CTkFrame, LEFT, CTkButton, CTkLabel, TOP, CTkFont, X, CTkEntry, StringVar, RIGHT, Y, \
     CTkOptionMenu
 from tkinter import Canvas, Menu, CURRENT
 from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showwarning
+
+from constants import APP_WIDTH, APP_HEIGHT
 from game_frame import GameBoard
 import json
-import i18n_config
+
 
 class LBControlPanel(CTkFrame):
     def __init__(self, master, board: GameBoard, **kwargs):
@@ -38,7 +41,8 @@ class LBControlPanel(CTkFrame):
         frame_bricks = CTkFrame(self, width=self.winfo_reqwidth() - 10, height=200)
         frame_bricks.pack(fill=X, side=TOP, padx=5, pady=5)
 
-        label_list_colors = CTkLabel(frame_bricks, text=i18n.t('choose-color'), width=frame_bricks.winfo_reqwidth() - 10,
+        label_list_colors = CTkLabel(frame_bricks, text=i18n.t('choose-color'),
+                                     width=frame_bricks.winfo_reqwidth() - 10,
                                      font=self.font_small, corner_radius=50)
         label_list_colors.pack(fill=X, padx=5, pady=5)
 
@@ -111,7 +115,10 @@ class LBControlPanel(CTkFrame):
         frame_hp = CTkFrame(self)
         frame_hp.pack(fill=X, padx=5, pady=5)
 
-        option_menu_hp = CTkOptionMenu(frame_hp, values=[i18n.t('hp-double-dot-number', hp='1'), i18n.t('hp-double-dot-number', hp='2'), i18n.t('hp-double-dot-number', hp='3')], variable=self.option_menu_str)
+        option_menu_hp = CTkOptionMenu(frame_hp, values=[i18n.t('hp-double-dot-number', hp='1'),
+                                                         i18n.t('hp-double-dot-number', hp='2'),
+                                                         i18n.t('hp-double-dot-number', hp='3')],
+                                       variable=self.option_menu_str)
         option_menu_hp.pack(fill=X, padx=5, pady=5)
 
         frame_control_buttons = CTkFrame(self)
@@ -289,31 +296,6 @@ class LBControlPanel(CTkFrame):
         self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.ball_color)
         self.level['ball']['color'] = str(self.ball_color)
 
-        # for key, value in self.level['bricks'].items():
-        #     print(self.level)
-        #     print(key)
-        #     x1, y1, x2, y2 = self.canvas.coords(int(key))
-        #     fill_color = self.canvas.itemcget(int(key), 'fill')
-        #     self.level['bricks'][str(key)] = {
-        #         'x1': x1,
-        #         'y1': y1,
-        #         'x2': x2,
-        #         'y2': y2,
-        #         'fill': fill_color
-        #     }
-        # for key, value in self.level['walls'].items():
-        #     x1, y1, x2, y2 = self.canvas.bbox(int(key))
-        #     fill_color = self.canvas.itemcget(int(key), 'fill')
-        #     outline_color = self.canvas.itemcget(int(key), 'outline')
-        #     self.level['walls'][str(key)] = {
-        #         'x1': x1,
-        #         'y1': y1,
-        #         'x2': x2,
-        #         'y2': y2,
-        #         'fill': fill_color,
-        #         'outline': outline_color
-        #     }
-
 
 class LevelBuilder(CTkFrame):
     def __init__(self, master, level_path: str = None, **kwargs):
@@ -332,12 +314,13 @@ class LevelBuilder(CTkFrame):
         self.initUI()
 
     def initUI(self):
-        game_board = GameBoard(self, False, self.level_path, True, width=1000, height=640)
+        game_board = GameBoard(self, False, self.level_path, True, width=APP_WIDTH, height=APP_HEIGHT)
 
         self.canvas = game_board.getCanvas()
         self.control_panel = LBControlPanel(self, game_board, width=190, height=self.master.winfo_height() - 10)
         self.control_panel.pack(side=RIGHT, fill=Y, padx=5, pady=5)
-        game_board.pack(padx=5, pady=5)
+        # game_board.pack(padx=5, pady=5)
+        game_board.place(x=0, y=0)
 
         # self.canvas = Canvas(self, width=1060, height=630, bg='black')
         # self.canvas.pack(side=LEFT)

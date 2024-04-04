@@ -1,4 +1,7 @@
-# import tkinter as tk
+import tkinter as tk
+
+import customtkinter as ctk
+
 # from math import sqrt
 #
 # radius = 20
@@ -158,20 +161,125 @@
 # i18n.load_path.append('locales')
 # print(i18n.t('test'))
 
-from cryptography.fernet import Fernet
+# from cryptography.fernet import Fernet
+#
+# # Generate a key
+# key = Fernet.generate_key()
+# cipher_suite = Fernet(key)
+#
+# # Encrypt the original string
+# original_string = b"Secret message"
+# cipher_text = cipher_suite.encrypt(original_string)
+#
+# # Decrypt back to the original string
+# decrypted_string = cipher_suite.decrypt(cipher_text)
+#
+# print("Original String:", original_string.decode())
+# print("Decrypted String:", decrypted_string.decode())
+#
 
-# Generate a key
-key = Fernet.generate_key()
-cipher_suite = Fernet(key)
-
-# Encrypt the original string
-original_string = b"Secret message"
-cipher_text = cipher_suite.encrypt(original_string)
-
-# Decrypt back to the original string
-decrypted_string = cipher_suite.decrypt(cipher_text)
-
-print("Original String:", original_string.decode())
-print("Decrypted String:", decrypted_string.decode())
+import i18n
+import i18n_config
 
 
+# app = customtkinter.CTk()
+# app.geometry("400x300")
+#
+#
+# def button_click_event():
+#     # dialog = customtkinter.CTkInputDialog(text="Type in a number:", title="Test")
+#     # print("Number:", dialog.get_input())
+#     file_name = customtkinter.CTkInputDialog(title=i18n.t('level-save'), text=i18n.t('ask-level-title'))
+#     print("Name:", file_name.get_input())
+#
+#
+# button = customtkinter.CTkButton(app, text="Open Dialog", command=button_click_event)
+# button.pack(padx=20, pady=20)
+#
+# app.mainloop()
+
+class CustomDialog(ctk.CTkToplevel):
+    def __init__(self, options: {}, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.app_width = 400
+        self.app_height = 170
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+
+        window_title = options.get('title', i18n.t('level-editor-title'))
+        entry_prompt = options.get('entry_prompt', i18n.t('entry_prompt'))
+        switch_prompt = options.get('switch_prompt', i18n.t('switch_prompt'))
+
+        x = (screen_width // 2) - (self.app_width // 2)
+        y = (screen_height // 2) - (self.app_height // 2)
+
+        self.geometry(f"{self.app_width}x{self.app_height}+{x}+{y}")
+        self.title(window_title)
+        self.resizable(False, False)
+
+        self.var = ctk.StringVar()
+        self.grab_set()
+
+        self.content_frame = ctk.CTkFrame(self)
+        self.content_frame.pack(fill=ctk.BOTH, padx=5, pady=5)
+
+        self.buttons_frame = ctk.CTkFrame(self)
+        self.buttons_frame.pack(fill=ctk.BOTH, padx=5, pady=5)
+
+        self.label = ctk.CTkLabel(self.content_frame, text=entry_prompt, justify="left")
+        self.entry = ctk.CTkEntry(self.content_frame, textvariable=self.var)
+        self.ok_button = ctk.CTkButton(self.buttons_frame, text="OK", command=self.on_ok)
+        self.cancel_button = ctk.CTkButton(self.buttons_frame, text="Cancel", command=self.on_ok)
+        self.switch_var = ctk.StringVar(value="off")
+        self.switch = ctk.CTkSwitch(self.content_frame, text=switch_prompt, command=self.switch_event,
+                                    variable=self.switch_var, onvalue="on", offvalue="off")
+
+        self.label.pack(side="top", fill="x", padx=5, pady=5)
+        self.entry.pack(side="top", fill="x", padx=5, pady=5)
+        self.switch.pack(side="top", fill="x", padx=5, pady=5)
+        self.ok_button.pack(side="right", padx=5, pady=5)
+        self.cancel_button.pack(side="right", padx=5, pady=5)
+
+        self.entry.bind("<Return>", self.on_ok)
+
+    def switch_event(self):
+        print("switch toggled, current value:", self.switch_var.get())
+
+    def on_ok(self, event=None):
+        self.destroy()
+
+    def show(self):
+        self.wm_deiconify()
+        self.entry.focus_force()
+        self.wait_window()
+        return None if self.var.get() == '' else self.var.get()
+
+
+class Example(ctk.CTkFrame):
+    def __init__(self, master: any, **kwargs):
+        super().__init__(master, **kwargs)
+        self.button = ctk.CTkButton(self, text="Get Input", command=self.on_button)
+        self.label = ctk.CTkLabel(self, text="", width=20)
+        self.button.pack(padx=8, pady=8)
+        self.label.pack(side="bottom", fill="both", expand=True)
+
+    def on_button(self):
+        string = CustomDialog({}).show()
+        print(string)
+        self.label.configure(text="You entered:\n" + string)
+
+
+# if __name__ == "__main__":
+#     root = ctk.CTk()
+#     root.wm_geometry("400x200")
+#     Example(root).pack(fill="both", expand=True)
+#     root.mainloop()
+
+
+# Assuming o is a dictionary
+o = {'title1': 'My Title'}
+
+# Replace o['title'] with 'title' if it doesn't exist or is empty
+title = o.get('title1', 'title1')
+
+print(title)  # Output will be 'My Title'

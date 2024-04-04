@@ -1,7 +1,7 @@
 import time
-from tkinter import filedialog, Label
+from tkinter import filedialog
 from customtkinter import CTkFrame, CTkLabel, CTkImage, LEFT, CTkFont, CTkButton
-from PIL import Image, ImageTk
+from PIL import Image
 import requests
 import firebase
 import io

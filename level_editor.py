@@ -13,8 +13,9 @@ class LevelEditor(CTkToplevel):
     def __init__(self):
         super().__init__()
         self.current_page = None
-        self.app_width = 1210
-        self.app_height = 650
+        self.app_width = 1200
+        # self.app_height = 650
+        self.app_height = 660
         self.initUI()
         self.initMainMenu()
 
