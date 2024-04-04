@@ -1,12 +1,10 @@
 import time
-from io import BytesIO
-from tkinter import filedialog
-
-import requests
+from tkinter import filedialog, Label
 from customtkinter import CTkFrame, CTkLabel, CTkImage, LEFT, CTkFont, CTkButton
-from PIL import Image
-
+from PIL import Image, ImageTk
+import requests
 import firebase
+import io
 
 
 class AccountInfo(CTkFrame):
@@ -22,8 +20,13 @@ class AccountInfo(CTkFrame):
         self._init_components()
 
     def _init_components(self):
-        image = Image.open('assets/icons/avatar.png')
-        icon = CTkImage(light_image=image, dark_image=image, size=(40, 40))
+        avatar = firebase.db.child(self.user['localId']).child('avatar').child('url').get().val()
+        if avatar is None:
+            image = Image.open('assets/icons/avatar.png')
+            icon = CTkImage(light_image=image, dark_image=image, size=(40, 40))
+        else:
+            icon = self.load_image(avatar)
+
         self.avatar = CTkLabel(self, width=40, height=40, image=icon, text="", cursor="hand2")
         self.avatar.pack(side=LEFT, padx=10, pady=10)
         self.avatar.bind("<Button-1>", self.on_change_avatar)
@@ -46,20 +49,31 @@ class AccountInfo(CTkFrame):
         )
 
         if file_path:
-            print(self.user)
+            avatar = firebase.db.child(self.user['localId']).child('avatar').child('path').get().val()
+            if avatar:
+                firebase.storage.delete('avatars/' + str(avatar), token=self.user['idToken'])
+
             storage_name = self.user['localId'] + "-" + str(time.time()) + "." + file_path.split(".")[-1]
             firebase.storage.child('avatars').child(storage_name).put(file_path, self.user['idToken'])
             url = firebase.storage.child('avatars').child(storage_name).get_url(self.user['idToken'])
-            firebase.auth.update_profile(self.user['idToken'], photo_url=url)
-
-            self.load_image(url)
+            firebase.db.child(self.user['localId']).child('avatar').set({'url': url, 'path': storage_name})
+            self.avatar.configure(image=self.load_image(url + "&auth=" + self.user['localId']))
 
     def load_image(self, url):
-        response = requests.get(url)
-        image_data = response.content
-        image = Image.open(BytesIO(image_data))
-        photo = CTkImage(light_image=image, dark_image=image, size=(35, 35))
-        self.avatar.config(image=photo)
+        icon = WebImage(url, self.user['idToken']).get()
+        icon = CTkImage(light_image=icon, dark_image=icon, size=(40, 40))
+        return icon
 
     def show(self):
         self.place(x=10, y=10)
+
+
+class WebImage:
+    def __init__(self, url, token):
+        headers = {"Authorization": "Firebase " + token}
+        with requests.get(url, headers=headers) as u:
+            raw_data = u.content
+        self.image = Image.open(io.BytesIO(raw_data))
+
+    def get(self):
+        return self.image
