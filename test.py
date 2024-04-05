@@ -181,6 +181,7 @@ import customtkinter as ctk
 import i18n
 from customtkinter import CTkFrame
 
+import firebase
 import i18n_config
 from custom_dialogs import InfoDialog
 
@@ -209,26 +210,29 @@ class ListView(ctk.CTkScrollableFrame):
 
     def add_item(self, item: CTkFrame):
         self.items.append(item)
-        item.pack(side=ctk.TOP, padx=5, pady=5)
+        item.pack(side=ctk.TOP, fill=ctk.BOTH, expand=True,  padx=5, pady=5)
 
 
 class LevelItem(CTkFrame):
     def __init__(self, master: any, level: {}, **kwargs):
         super().__init__(master, **kwargs)
+        self.frame = CTkFrame(self)
+
         self.level = level
 
-        self.title_label = ctk.CTkLabel(self, text=level['title'])
-        self.title_label.pack(side=ctk.LEFT, padx=5)
+        self.title_label = ctk.CTkLabel(self.frame, text=level['title'], width=200, justify='left')
+        self.title_label.pack(side=ctk.LEFT, padx=10, pady=10)
 
-        self.creator =ctk.CTkLabel(self, text=i18n.t('creator-name', creator=level['creatorName']))
-        self.title_label.pack(side=ctk.LEFT, padx=5)
+        self.creator = ctk.CTkLabel(self.frame, text=i18n.t('creator-name', creator=level['creatorName']))
+        self.creator.pack(side=ctk.LEFT, padx=10, pady=10)
 
-        self.hp_counter = ctk.CTkLabel(self, text=i18n.t('hp-double-dot-number', hp=level['level']['hp']))
-        self.hp_counter.pack(side=ctk.LEFT, padx=5)
+        self.hp_counter = ctk.CTkLabel(self.frame, text=i18n.t('hp-double-dot-number', hp=level['level']['hp']))
+        self.hp_counter.pack(side=ctk.LEFT, padx=10, pady=10)
 
-        self.
+        self.button = ctk.CTkButton(self.frame, text="test", command=lambda: print(level['key']))
+        self.button.pack(side=ctk.LEFT)
 
-
+        self.frame.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
 
 
 
@@ -240,10 +244,10 @@ def main():
     custom_list_view = ListView(root)
     custom_list_view.pack(expand=True, fill="both")
 
-    # Example usage:
-    custom_list_view.add_item("Item 1")
-    custom_list_view.add_item("Item 2")
-    custom_list_view.add_item("Item 3")
+    for level in firebase.db.child('community-levels').get().each():
+        val = level.val()
+        val['key'] = level.key()
+        custom_list_view.add_item(LevelItem(custom_list_view, val))
 
     root.mainloop()
 
