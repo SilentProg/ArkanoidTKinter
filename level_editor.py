@@ -66,6 +66,8 @@ class LevelEditor(CTkToplevel):
             val = level.val()
             val['key'] = level.key()
             val['parent'] = levels.key()
+            if 'walls' not in val['level']:
+                val['level']['walls'] = {}
             level_item = LevelItem(levels_list, val)
             level_item.set_on_delete(self.deleteLevel)
             level_item.set_on_load(self._load_level)
@@ -114,7 +116,8 @@ class LevelEditor(CTkToplevel):
     def openChooser(self):
         if self.current_page and not ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-load-level')):
             return
-        self.current_page.destroy()
+        if self.current_page:
+            self.current_page.destroy()
         self._init_levels_chooser()
         self._show_level_chooser()
 
@@ -137,9 +140,14 @@ class LevelEditor(CTkToplevel):
             load()
 
     def _load_level(self, level):
-        self.current_page.destroy()
+        # print(level)
+        if self.current_page:
+            self.current_page.destroy()
+        if self.tab_view:
+            self.tab_view.destroy()
         self.current_page = LevelBuilder(self, level, width=self.app_width, height=self.app_height)
         self.current_page.pack(fill=BOTH, expand=True)
+
 
 
 def main():

@@ -102,12 +102,12 @@ class GameBoard(CTkFrame):
             self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.level['carriage']['color'])
             self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.level['ball']['color'])
 
-            self.loadItems(self.level['bricks'], self.bricks)
-            self.loadItems(self.level['walls'], self.walls)
+            self.loadItems(self.level.get('bricks', []), self.bricks)
+            self.loadItems(self.level.get('walls', []), self.walls)
 
         if self.level and not next_level:
             load()
-        elif self.level_path:
+        elif self.level_path and isinstance(self.level_path, str):
             try:
                 print(self.level_path)
                 with open(self.level_path, "r") as json_file:
@@ -115,6 +115,8 @@ class GameBoard(CTkFrame):
                     load()
             except FileNotFoundError:
                 print('File not found')
+        elif self.level_path and isinstance(self.level_path, dict):
+            self.level = self.level_path['level']
         else:
             if self.level:
                 return
@@ -139,8 +141,11 @@ class GameBoard(CTkFrame):
             self.restart(next_level=True)
 
     def loadItems(self, items: {}, array):
+        items = {index: value for index, value in enumerate(items) if value is not None} if isinstance(items, list) else items
+
         items_keys = list(items.keys())
         print(type(items_keys))
+        print(type(items))
         for i in range(0, len(items_keys)):
             key = items_keys[i]
             print(items[key])
@@ -165,6 +170,33 @@ class GameBoard(CTkFrame):
                 'outline': outline_color
             }
             array.append(id_item)
+
+    # def loadItems(self, items: [], array):
+    #     print(items)
+    #     for i in range(0, len(items)):
+    #         if items[i] is None:
+    #             continue
+    #         if items[i] == {}:
+    #             continue
+    #         x1 = int(items[i]['x1'])
+    #         y1 = int(items[i]['y1'])
+    #         x2 = int(items[i]['x2'])
+    #         y2 = int(items[i]['y2'])
+    #         fill_color = items[i]['fill']
+    #         outline_color = 'white'
+    #         if 'outline' in items[i]:
+    #             outline_color = items[i]['outline']
+    #         id_item = self.canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline=outline_color)
+    #         # items.pop(i)
+    #         # items[id_item] = {
+    #         #     'x1': x1,
+    #         #     'y1': y1,
+    #         #     'x2': x2,
+    #         #     'y2': y2,
+    #         #     'fill': fill_color,
+    #         #     'outline': outline_color
+    #         # }
+    #         array.append(id_item)
 
     def getCanvas(self) -> Canvas:
         return self.canvas
