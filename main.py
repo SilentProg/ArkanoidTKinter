@@ -11,7 +11,7 @@ from game_frame import GameBoard
 from level_editor import LevelEditor
 import firebase
 from login_page import LoginPage
-from constants import APP_WIDTH, APP_HEIGHT
+from constants import APP_WIDTH, APP_HEIGHT, isAdmin
 from menu_page import MenuPage
 from register_page import RegisterPage
 from session import Session
@@ -75,7 +75,7 @@ class App(CTk):
         self.mainMenuPage.add_button(i18n.t('level-editor'), lambda: LevelEditor())
         self.mainMenuPage.add_button(i18n.t('settings'), lambda: self.__show_page(self.settings_page))
 
-        if self.user and self.user['email'] == 'arkanoid-admin@gmail.com':
+        if isAdmin():
             self.admin_info = AdminInfo(self)
             self.admin_info.show()
             self.mainMenuPage.add_button(i18n.t('test'), lambda: print('test'))
