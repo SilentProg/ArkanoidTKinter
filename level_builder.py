@@ -11,8 +11,8 @@ from tkinter import Canvas, Menu, CURRENT
 from tkinter.colorchooser import askcolor
 from tkinter.messagebox import showwarning
 
-from constants import APP_WIDTH, APP_HEIGHT
-from custom_dialogs import PromptSwitchDialog, InfoDialog
+from constants import APP_WIDTH, APP_HEIGHT, ADMIN_EMAIL, isAdmin
+from custom_dialogs import PromptSwitchDialog, InfoDialog, PromptDialog
 from game_frame import GameBoard
 import json
 
@@ -183,23 +183,34 @@ class LBControlPanel(CTkFrame):
 
     def saveLevel(self):
         self.updateAllObjs()
-        result = PromptSwitchDialog({'title': i18n.t('level-save'),
-                                     'entry_prompt': i18n.t('ask-level-title'),
-                                     'switch_prompt': i18n.t('ask-make-public'),
-                                     'ok_text': i18n.t('save')}
-                                    ).show()
-        file_name = result['entry_value']
-        public = result['switch_value']
-        # json_string = json.dumps(self.level, indent=4)
+        public = None
+        if isAdmin():
+            file_name = PromptDialog({'title': i18n.t('level-save'),
+                                      'entry_prompt': i18n.t('ask-level-title'),
+                                      'ok_text': i18n.t('save')}
+                                     ).show()
+        else:
+            result = PromptSwitchDialog({'title': i18n.t('level-save'),
+                                         'entry_prompt': i18n.t('ask-level-title'),
+                                         'switch_prompt': i18n.t('ask-make-public'),
+                                         'ok_text': i18n.t('save')}
+                                        ).show()
+            file_name = result['entry_value']
+            public = result['switch_value']
+            # json_string = json.dumps(self.level, indent=4)
 
         if file_name:
-            firebase.db.child("community-levels").push({
+            level_data = {
                 'creatorName': firebase.auth.current_user['displayName'],
                 'creatorLocalId': firebase.auth.current_user['localId'],
-                'public': public,
                 'title': file_name,
                 'level': self.level
-            })
+            }
+
+            if public:
+                level_data['public'] = public
+
+            firebase.db.child('levels' if isAdmin() else 'community-levels').push(level_data)
             InfoDialog({
                 'title': i18n.t('level-save'),
                 'message': i18n.t('level-saved')

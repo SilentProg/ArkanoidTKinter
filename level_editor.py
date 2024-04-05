@@ -6,18 +6,27 @@ from tkinter import Menu
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno as ConfirmDialog
 
+from constants import isAuth
+from custom_dialogs import InfoDialog
 from level_builder import LevelBuilder
 
 
 class LevelEditor(CTkToplevel):
     def __init__(self):
         super().__init__()
+        if not isAuth():
+            InfoDialog({
+                'title': i18n.t('auth-error'),
+                'message': i18n.t('permission-denied')
+            }).show()
+            self.destroy()
+
         self.current_page = None
         self.app_width = 1200
-        # self.app_height = 650
         self.app_height = 660
         self.initUI()
         self.initMainMenu()
+
 
     def initUI(self):
         self.grab_set()

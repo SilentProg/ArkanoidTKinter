@@ -20,7 +20,7 @@ class AccountInfo(CTkFrame):
         self._init_components()
 
     def _init_components(self):
-        avatar = firebase.db.child(self.user['localId']).child('avatar').child('url').get().val()
+        avatar = firebase.db.child('users-data').child(self.user['localId']).child('avatar').child('url').get().val()
         if avatar is None:
             image = Image.open('assets/icons/avatar.png')
             icon = CTkImage(light_image=image, dark_image=image, size=(40, 40))
@@ -49,14 +49,14 @@ class AccountInfo(CTkFrame):
         )
 
         if file_path:
-            avatar = firebase.db.child(self.user['localId']).child('avatar').child('path').get().val()
+            avatar = firebase.db.child('users-data').child(self.user['localId']).child('avatar').child('path').get().val()
             if avatar:
                 firebase.storage.delete('avatars/' + str(avatar), token=self.user['idToken'])
 
             storage_name = self.user['localId'] + "-" + str(time.time()) + "." + file_path.split(".")[-1]
             firebase.storage.child('avatars').child(storage_name).put(file_path, self.user['idToken'])
             url = firebase.storage.child('avatars').child(storage_name).get_url(self.user['idToken'])
-            firebase.db.child(self.user['localId']).child('avatar').set({'url': url, 'path': storage_name})
+            firebase.db.child('users-data').child(self.user['localId']).child('avatar').set({'url': url, 'path': storage_name})
             self.avatar.configure(image=self.load_image(url + "&auth=" + self.user['localId']))
 
     def load_image(self, url):

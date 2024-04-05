@@ -76,6 +76,9 @@
     "MISSING_DATA": "Не всі дані!",
     "cancel": "Відхилити",
     "ok": "Ok",
-    "admin-status": "Авторизовано як адміністратор!"
+    "admin-status": "Авторизовано як адміністратор!",
+    "auth-error": "Помилка авторизації",
+    "permission-denied": "Ви не авторизовані",
+    "creator-name": "Творець: %{creator}"
   }
 }

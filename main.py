@@ -28,6 +28,7 @@ class App(CTk):
     login_page: LoginPage = None
     register_page: RegisterPage = None
     account_info: AccountInfo = None
+    admin_info: AdminInfo = None
     user = None
 
     def __init__(self):
@@ -81,7 +82,6 @@ class App(CTk):
         self.mainMenuPage.add_button(i18n.t('quit'), self.onExit)
         self.mainMenuPage.init_buttons()
 
-
         self.account_info = AccountInfo(self, user)
         self.account_info.set_on_logout(self.logout)
         self.account_info.show()
@@ -94,6 +94,10 @@ class App(CTk):
         self.login_page.password_entry.delete(0, END)
         if self.account_info:
             self.account_info.destroy()
+
+        if self.admin_info:
+            self.admin_info.destroy()
+
         self.__show_page(self.login_page)
 
     def regUser(self, user):
