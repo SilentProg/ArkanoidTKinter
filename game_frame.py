@@ -117,6 +117,7 @@ class GameBoard(CTkFrame):
                 print('File not found')
         elif self.level_path and isinstance(self.level_path, dict):
             self.level = self.level_path['level']
+            load()
         else:
             if self.level:
                 return

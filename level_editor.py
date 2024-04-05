@@ -5,11 +5,9 @@ import i18n_config
 from customtkinter import BOTH, CTkToplevel, CTkLabel, CTkButton, CTkTabview, LEFT, Y
 from tkinter import Menu
 from tkinter.filedialog import askopenfilename
-from tkinter.messagebox import askyesno as ConfirmDialog
-
 from constants import isAuth, isAdmin, centered_window
 from custom_components import ListView, LevelItem
-from custom_dialogs import InfoDialog
+from custom_dialogs import InfoDialog, ConfirmDialog
 from level_builder import LevelBuilder
 
 
@@ -88,8 +86,7 @@ class LevelEditor(CTkToplevel):
         menubar.add_cascade(label=i18n.t('menu-file'), menu=fileMenu)
 
     def onExit(self):
-        answer = ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-quit'))
-        if answer:
+        if ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-quit'), 'ok_text': i18n.t('yes')}).show():
             self.destroy()
 
     def newLevel(self):
@@ -99,7 +96,7 @@ class LevelEditor(CTkToplevel):
             self.current_page.pack(fill=BOTH, expand=True)
 
         if self.current_page:
-            answer = ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-new-level'))
+            answer = ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-new-level'), 'ok_text': i18n.t('yes')}).show()
             if answer:
                 self.current_page.destroy()
                 create()
@@ -107,14 +104,14 @@ class LevelEditor(CTkToplevel):
             create()
 
     def deleteLevel(self, level):
-        answer = ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-delete-level'))
+        answer = ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-delete-level'), 'ok_text': i18n.t('yes')}).show()
         if answer:
             firebase.db.child(level['parent']).child(level['key']).remove(token=firebase.auth.current_user['idToken'])
 
         return answer
 
     def openChooser(self):
-        if self.current_page and not ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-load-level')):
+        if self.current_page and not ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-load-level'), 'ok_text': i18n.t('yes')}).show():
             return
         if self.current_page:
             self.current_page.destroy()
@@ -132,7 +129,7 @@ class LevelEditor(CTkToplevel):
                 self.current_page.pack(fill=BOTH, expand=True)
 
         if self.current_page:
-            answer = ConfirmDialog(title=i18n.t('confirmation'), message=i18n.t('ask-load-level'))
+            answer = ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-load-level'), 'ok_text': i18n.t('yes')}).show()
             if answer:
                 self.current_page.destroy()
                 load()
@@ -147,7 +144,6 @@ class LevelEditor(CTkToplevel):
             self.tab_view.destroy()
         self.current_page = LevelBuilder(self, level, width=self.app_width, height=self.app_height)
         self.current_page.pack(fill=BOTH, expand=True)
-
 
 
 def main():

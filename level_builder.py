@@ -182,8 +182,21 @@ class LBControlPanel(CTkFrame):
             self.current_object = None
 
     def saveLevel(self):
+        self.board.pause = True
+        self.board.restart()
         self.updateAllObjs()
+
         public = None
+        if 'key' in self.board.level_path and 'parent' in self.board.level_path:
+            firebase.db.child(self.board.level_path['parent']).child(self.board.level_path['key']).update({
+                'level': self.level
+            })
+            InfoDialog({
+                'title': i18n.t('level-save'),
+                'message': i18n.t('level-saved')
+            }).show()
+            return
+
         if isAdmin():
             file_name = PromptDialog({'title': i18n.t('level-save'),
                                       'entry_prompt': i18n.t('ask-level-title'),
@@ -197,26 +210,21 @@ class LBControlPanel(CTkFrame):
                                         ).show()
             file_name = result['entry_value']
             public = result['switch_value']
-            # json_string = json.dumps(self.level, indent=4)
 
         if file_name:
             level_data = {
                 'creatorName': firebase.auth.current_user['displayName'],
                 'creatorLocalId': firebase.auth.current_user['localId'],
                 'title': file_name,
-                'level': self.level
+                'level': self.level,
+                'public': public
             }
-
-            if public:
-                level_data['public'] = public
-
             firebase.db.child('levels' if isAdmin() else 'community-levels').push(level_data)
+
             InfoDialog({
                 'title': i18n.t('level-save'),
                 'message': i18n.t('level-saved')
             }).show()
-            # with open("levels/{}.json".format(file_name), "w") as json_file:
-            #     json_file.write(json_string)
 
     def addBrick(self):
         print("block_added")
@@ -346,7 +354,6 @@ class LevelBuilder(CTkFrame):
 
     def initUI(self):
         game_board = GameBoard(self, False, self.level_path, True, width=APP_WIDTH, height=APP_HEIGHT)
-        game_board.loadLevel()
         self.canvas = game_board.getCanvas()
         self.control_panel = LBControlPanel(self, game_board, width=190, height=self.master.winfo_height() - 10)
         self.control_panel.pack(side=RIGHT, fill=Y, padx=5, pady=5)

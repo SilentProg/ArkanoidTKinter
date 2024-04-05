@@ -5,6 +5,7 @@ from tkinter.messagebox import askyesno as confirmation
 
 from account_info import AccountInfo
 from admin_info import AdminInfo
+from custom_dialogs import ConfirmDialog
 from levels_page import LevelsPage
 from game_frame import GameBoard
 from level_editor import LevelEditor
@@ -115,8 +116,7 @@ class App(CTk):
         self.__show_page(self.mainMenuPage)
 
     def onExit(self):
-        answer = confirmation(title=i18n.t('confirmation'), message=i18n.t('ask-quit'))
-        if answer:
+        if ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-quit'), 'ok_text': i18n.t('yes')}).show():
             self.destroy()
 
     def startGame(self):
