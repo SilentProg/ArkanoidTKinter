@@ -3,6 +3,7 @@ from PIL import Image
 import i18n
 import i18n_config
 
+
 class AdminInfo(CTkFrame):
     def __init__(self, master: any, **kwargs):
         super().__init__(master, **kwargs)
