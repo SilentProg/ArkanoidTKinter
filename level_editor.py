@@ -1,12 +1,14 @@
 import i18n
 
+import firebase
 import i18n_config
-from customtkinter import BOTH, CTkToplevel, CTkLabel, CTkButton
+from customtkinter import BOTH, CTkToplevel, CTkLabel, CTkButton, CTkTabview, LEFT, Y
 from tkinter import Menu
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import askyesno as ConfirmDialog
 
-from constants import isAuth
+from constants import isAuth, isAdmin
+from custom_components import ListView, LevelItem
 from custom_dialogs import InfoDialog
 from level_builder import LevelBuilder
 
@@ -14,6 +16,7 @@ from level_builder import LevelBuilder
 class LevelEditor(CTkToplevel):
     def __init__(self):
         super().__init__()
+
         if not isAuth():
             InfoDialog({
                 'title': i18n.t('auth-error'),
@@ -26,17 +29,34 @@ class LevelEditor(CTkToplevel):
         self.app_height = 660
         self.initUI()
         self.initMainMenu()
+        self._init_components()
+
+    def _init_components(self):
+        self.tab_view = CTkTabview(self)
+        if isAdmin():
+            tab = self.tab_view.add(i18n.t('levels'))
+            levels_list = ListView(tab)
+            levels_list.pack(expand=True, fill="both")
+
+            for level in firebase.db.child('community-levels').get().each():
+                val = level.val()
+                val['key'] = level.key()
+                levels_list.add_item(LevelItem(levels_list, val))
+
+
+
+        self.tab_view.add(i18n.t('title'))
+
+        self.tab_view.pack(side=LEFT, fill=BOTH, expand=True, padx=5, pady=5)
+
 
 
     def initUI(self):
         self.grab_set()
-
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
-
         x = (screen_width // 2) - (self.app_width // 2)
         y = (screen_height // 2) - (self.app_height // 2)
-
         self.geometry(f"{self.app_width}x{self.app_height}+{x}+{y}")
         self.title(i18n.t('level-editor-title'))
         self.resizable(False, False)
