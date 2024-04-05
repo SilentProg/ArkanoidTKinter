@@ -72,6 +72,7 @@ class MenuPage(CTkFrame):
         self.show_message(message)
 
     def show(self):
+        self.update_idletasks()
         x = APP_WIDTH / 2 - self.winfo_reqwidth() / 2
         y = APP_HEIGHT / 2 - self.winfo_reqheight() / 2
         self.place(x=x, y=y)

@@ -4,6 +4,7 @@ from customtkinter import CTk, CTkFrame, END
 from tkinter.messagebox import askyesno as confirmation
 
 from account_info import AccountInfo
+from admin_info import AdminInfo
 from levels_page import LevelsPage
 from game_frame import GameBoard
 from level_editor import LevelEditor
@@ -47,15 +48,11 @@ class App(CTk):
         self.levels_page.set_on_back(self.backToMainMenu)
 
         self.mainMenuPage = MainMenuPage(self)
-        self.mainMenuPage.add_button(i18n.t('play'), self.startGame)
-        self.mainMenuPage.add_button(i18n.t('levels'), lambda: self.__show_page(self.levels_page))
-        self.mainMenuPage.add_button(i18n.t('level-editor'), lambda: LevelEditor())
-        self.mainMenuPage.add_button(i18n.t('settings'), lambda: self.__show_page(self.settings_page))
-        self.mainMenuPage.add_button(i18n.t('quit'), self.onExit)
-        self.mainMenuPage.init_buttons()
 
         if not self.login_page.check_session():
             self.__show_page(self.login_page)
+
+        print(f"User: {self.user}")
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()
@@ -70,10 +67,25 @@ class App(CTk):
 
     def authUser(self, user):
         self.user = user
-        self.__show_page(self.mainMenuPage)
+
+        self.mainMenuPage.add_button(i18n.t('play'), self.startGame)
+        self.mainMenuPage.add_button(i18n.t('levels'), lambda: self.__show_page(self.levels_page))
+        self.mainMenuPage.add_button(i18n.t('level-editor'), lambda: LevelEditor())
+        self.mainMenuPage.add_button(i18n.t('settings'), lambda: self.__show_page(self.settings_page))
+
+        if self.user and self.user['email'] == 'arkanoid-admin@gmail.com':
+            self.admin_info = AdminInfo(self)
+            self.admin_info.show()
+            self.mainMenuPage.add_button(i18n.t('test'), lambda: print('test'))
+
+        self.mainMenuPage.add_button(i18n.t('quit'), self.onExit)
+        self.mainMenuPage.init_buttons()
+
+
         self.account_info = AccountInfo(self, user)
         self.account_info.set_on_logout(self.logout)
         self.account_info.show()
+        self.__show_page(self.mainMenuPage)
 
     def logout(self):
         session = Session()

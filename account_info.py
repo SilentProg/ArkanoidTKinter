@@ -65,7 +65,7 @@ class AccountInfo(CTkFrame):
         return icon
 
     def show(self):
-        self.place(x=10, y=10)
+        self.grid(row=0, column=0, padx=10, pady=10)
 
 
 class WebImage:
