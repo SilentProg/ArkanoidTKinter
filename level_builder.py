@@ -350,11 +350,7 @@ class LevelBuilder(CTkFrame):
         self.canvas = game_board.getCanvas()
         self.control_panel = LBControlPanel(self, game_board, width=190, height=self.master.winfo_height() - 10)
         self.control_panel.pack(side=RIGHT, fill=Y, padx=5, pady=5)
-        # game_board.pack(padx=5, pady=5)
         game_board.place(x=0, y=0)
-
-        # self.canvas = Canvas(self, width=1060, height=630, bg='black')
-        # self.canvas.pack(side=LEFT)
 
         self.canvas.bind("<ButtonPress-1>", self.start_drag)
         self.canvas.bind("<ButtonRelease-1>", self.stop_drag)

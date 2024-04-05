@@ -16,3 +16,13 @@ def isAdmin():
     if firebase.auth.current_user is None:
         return False
     return firebase.auth.current_user['email'] == ADMIN_EMAIL
+
+
+def centered_window(window, width, height, title, resizable):
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x = (screen_width // 2) - (width // 2)
+    y = (screen_height // 2) - (height // 2)
+    window.geometry(f"{width}x{height}+{x}+{y}")
+    window.title(title)
+    window.resizable(resizable, resizable)
