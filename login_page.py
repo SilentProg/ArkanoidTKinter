@@ -88,8 +88,8 @@ class LoginPage(MenuPage):
     def on_auth_success(self, user):
         if self.remember_me_var.get() == 'True':
             self.session.write_credentials({
-                'email': self.email_entry.get().encode(),
-                'password': self.password_entry.get().encode()
+                'email': self.email_entry.get(),
+                'password': self.password_entry.get()
             })
         self.on_success(user)
 

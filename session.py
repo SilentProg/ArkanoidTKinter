@@ -14,8 +14,8 @@ class Session:
         key = Fernet.generate_key()
         cipher_suite = Fernet(key)
         credentials['key'] = key.decode()
-        credentials['email'] = cipher_suite.encrypt(credentials['email']).decode()
-        credentials['password'] = cipher_suite.encrypt(credentials['password']).decode()
+        credentials['email'] = cipher_suite.encrypt(credentials['email'].encode()).decode()
+        credentials['password'] = cipher_suite.encrypt(credentials['password'].encode()).decode()
         with open(self.filename, 'w') as f:
             json.dump(credentials, f)
 
@@ -23,9 +23,9 @@ class Session:
         with open(self.filename, 'r') as f:
             credentials = json.load(f)
 
-        cipher_suite = Fernet(credentials['key'])
-        credentials['email'] = cipher_suite.decrypt(credentials['email']).decode()
-        credentials['password'] = cipher_suite.decrypt(credentials['password']).decode()
+        cipher_suite = Fernet(credentials['key'].encode())
+        credentials['email'] = cipher_suite.decrypt(credentials['email'].encode()).decode()
+        credentials['password'] = cipher_suite.decrypt(credentials['password'].encode()).decode()
         return credentials
 
     def delete_credentials(self):
