@@ -27,9 +27,8 @@ class CommunityLevels:
         if self.levels.val() is None:
             return
         for level in self.levels.each():
-            level.val()['complete'] = True if self.complete_levels.val() and level.key() in self.complete_levels.val() else False
-
-
+            level.val()[
+                'complete'] = True if self.complete_levels.val() and level.key() in self.complete_levels.val() else False
 
     def get_levels(self):
         return self.levels
@@ -40,22 +39,33 @@ class CommunityLevelsPage(MenuPage):
 
     def __init__(self, master: any, **kwargs):
         super().__init__(master, i18n.t('community-levels'), True, **kwargs)
-        self.levels = CommunityLevels()
+        self.levels = None
         self.list = ListView(self)
-        print("--- Community Levels ---")
-        for level in self.levels.get_levels().each():
-            print(level.val())
-            # self.list.add_item(CommunityLevelItem(self.list, level))
+        self._update()
+        self.list.pack(side=TOP, padx=5, pady=5)
 
-        self.list.pack(side=TOP)
-
-    def _init_components(self):
-        super()._init_components()
-
-    def loadLevel(self, level):
+    def play(self, level):
         if self.game:
             self.game.destroy()
 
-        # self.game = GameBoard(self.master, True, f'levels/level_{level}.json', width=APP_WIDTH,
-        #                       height=APP_HEIGHT)
+        self.game = GameBoard(self.master, True, level, True, True, width=APP_WIDTH,
+                              height=APP_HEIGHT)
+        self.game.set_on_return(self._update)
+
         self.game.place(x=2, y=0)
+
+    def _update(self):
+        self.levels = CommunityLevels()
+        self.list.clear()
+        # print("--- Community Levels ---")
+        for level in self.levels.get_levels().each():
+            # print(level.val())
+            val = level.val()
+            val['parent'] = self.levels.get_levels().key()
+            val['key'] = level.key()
+            item = CommunityLevelItem(self.list, val)
+            item.set_on_play(partial(self.play, val))
+            self.list.add_item(item)
+
+    def _init_components(self):
+        super()._init_components()

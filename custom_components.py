@@ -61,11 +61,28 @@ class CommunityLevelItem(CTkFrame):
     def __init__(self, master: any, level: {}, **kwargs):
         super().__init__(master, **kwargs)
         self.level = level
-        self.title_label = CTkLabel(self, text=level['title'], width=200, justify='left')
+        self.title_label = CTkLabel(self, text=level['title'], width=150, justify='left')
         self.title_label.pack(side=LEFT, padx=10, pady=10)
 
-        self.creator = CTkLabel(self, text=i18n.t('creator-name', creator=level['creatorName']))
+        self.creator = CTkLabel(self, text=level['creatorName'])
         self.creator.pack(side=LEFT, padx=10, pady=10)
 
         self.hp_counter = CTkLabel(self, text=i18n.t('hp-double-dot-number', hp=level['level']['hp']))
         self.hp_counter.pack(side=LEFT, padx=10, pady=10)
+
+
+
+        image = Image.open('assets/icons/play.png')
+        icon = CTkImage(dark_image=image, light_image=image)
+        self.play_button = CTkButton(self, image=icon, text='', width=25)
+        self.play_button.pack(side=RIGHT, padx=10, pady=10)
+        if level['complete']:
+            self.play_button.configure(fg_color=i18n.t('complete_color'))
+
+        image = Image.open('assets/icons/leadership.png')
+        icon = CTkImage(dark_image=image, light_image=image)
+        self.leaderboard_button = CTkButton(self, image=icon, text='', width=25)
+        self.leaderboard_button.pack(side=RIGHT, padx=5, pady=10)
+
+    def set_on_play(self, func):
+        self.play_button.configure(command=func)

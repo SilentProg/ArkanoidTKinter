@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 import i18n
 from customtkinter import CTkFrame, CTkLabel, CTkFont, CTkButton, CTkImage
@@ -9,12 +10,17 @@ from PIL import Image
 import pygame
 import configparser
 import re
+
+import firebase
 import i18n_config
+from LevelTimer import LevelTimer
+from custom_dialogs import InfoDialog
 
 
 class GameBoard(CTkFrame):
-    def __init__(self, master, show_ui, level_name, pause: bool = False, **kwargs):
+    def __init__(self, master, show_ui, level_name, pause: bool = False, show_start=False, **kwargs):
         super().__init__(master, **kwargs)
+        self.on_return = None
         self.level: {} = None
         self.level_path = level_name
         self.brick_h = None
@@ -53,24 +59,45 @@ class GameBoard(CTkFrame):
         self.ball_x, self.ball_y = self.size_w // 2, self.size_h // 2
         self.ball_vx, self.ball_vy = -5, -5
         self.showUi = show_ui
+        self.level_timer = LevelTimer()
         self.initUI()
         self.initGame()
+        if show_start:
+            self.after(200, self.askPlay)
+
+    def askPlay(self):
+        InfoDialog({
+            'title': i18n.t('level'),
+            'message': i18n.t('press-to-play'),
+            'ok_text': i18n.t('play')
+        }).show()
+        self.togglePause()
+        if not self.level_timer.isRunning():
+            self.level_timer.start_level()
 
     def togglePause(self):
         self.pause = not self.pause
+        if not self.level_timer.isRunning():
+            self.level_timer.start_level()
+        self.level_info_frame.button_pause.configure(
+            image=self.level_info_frame.play_icon if self.pause else self.level_info_frame.pause_icon
+        )
         if self.pause:
             self.canvas.unbind('<Key>')
             self.canvas.unbind('<KeyPress>')
             self.canvas.unbind('<KeyRelease>')
             self.canvas.unbind('<Motion>')
+            self.level_timer.pause_level()
         else:
             self.canvas.bind('<Key>', self.control)
             self.canvas.bind('<KeyPress>', self.control)
             self.canvas.bind('<KeyRelease>', self.control)
             self.canvas.bind('<Motion>', self.motion)
+            self.level_timer.resume_level()
             self.ball_movement()
 
     def restart(self, next_level: bool = False):
+        self.level_timer.restart()
         self.canvas.delete("all")
         self.walls = []
         self.bricks = []
@@ -142,7 +169,8 @@ class GameBoard(CTkFrame):
             self.restart(next_level=True)
 
     def loadItems(self, items: {}, array):
-        items = {index: value for index, value in enumerate(items) if value is not None} if isinstance(items, list) else items
+        items = {index: value for index, value in enumerate(items) if value is not None} if isinstance(items,
+                                                                                                       list) else items
 
         items_keys = list(items.keys())
         print(type(items_keys))
@@ -206,6 +234,9 @@ class GameBoard(CTkFrame):
         self.level_info_frame = LevelInfoFrame(self, self,
                                                width=self.size_w - 15,
                                                height=self.info_frame_size_h - 10)
+        self.level_info_frame.button_pause.configure(
+            image=self.level_info_frame.play_icon if self.pause else self.level_info_frame.pause_icon
+        )
         if self.showUi:
             self.level_info_frame.pack(padx=5, pady=5)
 
@@ -287,8 +318,23 @@ class GameBoard(CTkFrame):
             self.canvas.create_text(self.size_w // 2, self.size_h // 2, text=i18n.t('win'), fill='green',
                                     font=(None, 50))
             self.carriage_stop = False
-            self.levels.updateLastFromPath(self.level_path, self.points)
-            self.nextLevel()
+
+            self.level_timer.end_level()
+
+            if isinstance(self.level_path, dict):
+                print(self.level_path)
+                firebase.db.child('users-data').child(firebase.auth.current_user['localId']).child('completed-'+self.level_path['parent']).child(self.level_path['key']).push(
+                    {
+                        'date': datetime.now().isoformat(),
+                        'score': self.points,
+                        'time': self.level_timer.get_elapsed_time(),
+                        'spent-hp': self.level_info_frame.max_hp - self.level_info_frame.hp
+                    }
+                )
+                self.after(1000, self.level_info_frame.returnToMenu)
+            # self.levels.updateLastFromPath(self.level_path, self.points)
+            # self.nextLevel()
+
             return
 
         if self.ball_y < (self.size_h - self.radius):
@@ -346,6 +392,9 @@ class GameBoard(CTkFrame):
                 self.canvas.coords(self.carriage, self.carriage_x - self.carriage_w // 2, self.size_h,
                                    self.carriage_x + self.carriage_w // 2, self.size_h - self.carriage_h)
 
+    def set_on_return(self, _update):
+        self.on_return = _update
+
 
 class LevelInfoFrame(CTkFrame):
 
@@ -363,6 +412,13 @@ class LevelInfoFrame(CTkFrame):
         self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
         self.level_font = CTkFont(family="Helvetica", size=36, weight="bold")
         self.menu_click_sound = pygame.mixer.Sound("assets/sounds/menu_click.wav")
+        image = Image.open("assets/icons/pause.png")
+        self.pause_icon = CTkImage(light_image=image, dark_image=image)
+        image = Image.open("assets/icons/play.png")
+        self.play_icon = CTkImage(light_image=image, dark_image=image)
+        image = Image.open("assets/icons/restart.png")
+        self.restart_icon = CTkImage(light_image=image, dark_image=image)
+        self.button_pause = None
         self.initUI()
 
     def setHp(self, hp):
@@ -378,11 +434,11 @@ class LevelInfoFrame(CTkFrame):
         button_menu = CTkButton(self, text=i18n.t('menu'), font=self.button_font, height=40, command=self.returnToMenu)
         button_menu.grid(row=0, column=0, padx=10, pady=10)
 
-        button_pause = CTkButton(self, text=i18n.t('pause-symbol'), font=self.button_font, width=40, height=40,
-                                 command=self.board.togglePause)
-        button_pause.grid(row=0, column=1, padx=10, pady=10)
+        self.button_pause = CTkButton(self, text='', image=self.pause_icon, font=self.button_font, width=40, height=40,
+                                      command=self.board.togglePause)
+        self.button_pause.grid(row=0, column=1, padx=10, pady=10)
 
-        button_restart = CTkButton(self, text=i18n.t('restart-symbol'), font=self.button_font, width=40, height=40,
+        button_restart = CTkButton(self, text='', image=self.restart_icon, font=self.button_font, width=40, height=40,
                                    command=self.board.restart)
         button_restart.grid(row=0, column=2, padx=10, pady=10)
 
@@ -423,8 +479,11 @@ class LevelInfoFrame(CTkFrame):
         self.hp -= 1
 
     def returnToMenu(self):
-        self.board.togglePause()
+        if not self.board.pause:
+            self.board.togglePause()
+        self.board.on_return()
         self.after(100, self.board.destroy)
+
         # self.board.restart()
         # self.togglePause()
         # self.menu_click_sound.play()
