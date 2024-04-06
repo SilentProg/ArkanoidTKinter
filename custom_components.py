@@ -7,12 +7,17 @@ from PIL import Image
 class ListView(CTkScrollableFrame):
     def __init__(self, master: any, **kwargs):
         super().__init__(master, **kwargs)
-        self.configure(width=300, height=600)
+        self.configure(width=400, height=300)
         self.items = []
 
     def add_item(self, item: CTkFrame):
         self.items.append(item)
         item.pack(side=TOP, fill=BOTH, expand=True, padx=5, pady=5)
+
+    def clear(self):
+        for item in self.items:
+            item.destroy()
+        self.items.clear()
 
 
 class LevelItem(CTkFrame):
@@ -45,7 +50,22 @@ class LevelItem(CTkFrame):
             if func(level):
                 self.pack_forget()
                 self.destroy()
+
         self.delete_button.configure(command=lambda: delete(self.level))
 
     def set_on_load(self, func):
         self.load_button.configure(command=lambda: func(self.level))
+
+
+class CommunityLevelItem(CTkFrame):
+    def __init__(self, master: any, level: {}, **kwargs):
+        super().__init__(master, **kwargs)
+        self.level = level
+        self.title_label = CTkLabel(self, text=level['title'], width=200, justify='left')
+        self.title_label.pack(side=LEFT, padx=10, pady=10)
+
+        self.creator = CTkLabel(self, text=i18n.t('creator-name', creator=level['creatorName']))
+        self.creator.pack(side=LEFT, padx=10, pady=10)
+
+        self.hp_counter = CTkLabel(self, text=i18n.t('hp-double-dot-number', hp=level['level']['hp']))
+        self.hp_counter.pack(side=LEFT, padx=10, pady=10)

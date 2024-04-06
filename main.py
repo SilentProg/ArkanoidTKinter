@@ -5,6 +5,7 @@ from tkinter.messagebox import askyesno as confirmation
 
 from account_info import AccountInfo
 from admin_info import AdminInfo
+from community_levels_page import CommunityLevelsPage
 from custom_dialogs import ConfirmDialog
 from levels_page import LevelsPage
 from game_frame import GameBoard
@@ -29,6 +30,7 @@ class App(CTk):
     login_page: LoginPage = None
     register_page: RegisterPage = None
     account_info: AccountInfo = None
+    community_levels_page: CommunityLevelsPage = None
     admin_info: AdminInfo = None
     user = None
 
@@ -39,6 +41,7 @@ class App(CTk):
         self.login_page = LoginPage(self)
         self.register_page = RegisterPage(self)
         self.levels_page = LevelsPage(self)
+        self.community_levels_page = None
         self.settings_page = SettingsPage(self)
 
         self.login_page.set_on_register(lambda: self.__show_page(self.register_page))
@@ -54,7 +57,7 @@ class App(CTk):
         if not self.login_page.check_session():
             self.__show_page(self.login_page)
 
-        print(f"User: {self.user}")
+        # print(f"User: {self.user}")
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()
@@ -72,6 +75,7 @@ class App(CTk):
 
         self.mainMenuPage.add_button(i18n.t('play'), self.startGame)
         self.mainMenuPage.add_button(i18n.t('levels'), lambda: self.__show_page(self.levels_page))
+        self.mainMenuPage.add_button(i18n.t('community-levels'), self._show_community_levels)
         self.mainMenuPage.add_button(i18n.t('level-editor'), lambda: LevelEditor())
         self.mainMenuPage.add_button(i18n.t('settings'), lambda: self.__show_page(self.settings_page))
 
@@ -88,11 +92,22 @@ class App(CTk):
         self.account_info.show()
         self.__show_page(self.mainMenuPage)
 
+    def _show_community_levels(self):
+        if self.community_levels_page:
+            self.community_levels_page.destroy()
+        self.community_levels_page = CommunityLevelsPage(self)
+        self.community_levels_page.set_on_back(self.backToMainMenu)
+        self.__show_page(self.community_levels_page)
+
     def logout(self):
         session = Session()
         session.delete_credentials()
         self.login_page.email_entry.delete(0, END)
         self.login_page.password_entry.delete(0, END)
+
+        if self.mainMenuPage:
+            self.mainMenuPage.clear()
+
         if self.account_info:
             self.account_info.destroy()
 

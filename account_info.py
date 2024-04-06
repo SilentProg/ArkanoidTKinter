@@ -15,8 +15,6 @@ class AccountInfo(CTkFrame):
         self.font = CTkFont(family="Helvetica", size=25, weight="bold")
         self.user = user
         self.user_info = firebase.auth.get_account_info(self.user['idToken'])
-        print(self.user)
-        print(self.user_info)
         self._init_components()
 
     def _init_components(self):

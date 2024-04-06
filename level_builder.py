@@ -187,7 +187,7 @@ class LBControlPanel(CTkFrame):
         self.updateAllObjs()
 
         public = None
-        if 'key' in self.board.level_path and 'parent' in self.board.level_path:
+        if self.board.level_path and 'key' in self.board.level_path and 'parent' in self.board.level_path:
             firebase.db.child(self.board.level_path['parent']).child(self.board.level_path['key']).update({
                 'level': self.level
             })
