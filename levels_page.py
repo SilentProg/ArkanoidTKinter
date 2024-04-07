@@ -44,12 +44,21 @@ class LevelsPage(MenuPage):
         self.levels = CampaignLevels()
         self.list.clear()
         # print("--- Community Levels ---")
+        next_level = True
         for level in self.levels.get_levels().each():
             # print(level.val())
             val = level.val()
             val['parent'] = self.levels.get_levels().key()
             val['key'] = level.key()
             item = CommunityLevelItem(self.list, val)
+
+            if not val['complete'] and not next_level:
+                item.play_button.configure(fg_color=i18n.t('disable_color'))
+                item.play_button.configure(state=DISABLED)
+
+            if not val['complete']:
+                next_level = False
+
             item.creator.pack_forget()
             item.hp_counter.pack_forget()
             item.set_on_play(partial(self.play, val))

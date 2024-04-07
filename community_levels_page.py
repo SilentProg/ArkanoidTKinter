@@ -1,38 +1,12 @@
 from functools import partial
-
 import i18n
-from customtkinter import DISABLED, NORMAL, CTkScrollableFrame, X, BOTH, CTkButton, TOP
-
-import firebase
+from customtkinter import TOP
 from constants import APP_WIDTH, APP_HEIGHT
-from custom_components import ListView, LevelItem, CommunityLevelItem
+from custom_components import ListView, CommunityLevelItem
 from game_frame import GameBoard
 from menu_page import MenuPage
 from levels import Levels
 
-
-# class CommunityLevels:
-#     def __init__(self):
-#         self.db = firebase.db
-#         self.auth = firebase.auth
-#         self.uid = self.auth.current_user['localId']
-#         self.levels = self.db.child('community-levels').order_by_child('public').equal_to(True).get()
-#         self.complete_levels = self.db.child('users-data').child(self.uid).child(
-#             'completed-community-levels').get()
-#         print('--- Community Levels ---')
-#         print(self.levels)
-#         print(self.complete_levels)
-#         self._init_complete()
-#
-#     def _init_complete(self):
-#         if self.levels.val() is None:
-#             return
-#         for level in self.levels.each():
-#             level.val()[
-#                 'complete'] = True if self.complete_levels.val() and level.key() in self.complete_levels.val() else False
-#
-#     def get_levels(self):
-#         return self.levels
 
 class CommunityLevels(Levels):
     def __init__(self):

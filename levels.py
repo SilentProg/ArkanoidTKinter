@@ -14,15 +14,20 @@ class Levels:
             self.levels = self.db.child('levels').get()
 
         self.complete_levels = self.db.child('users-data').child(self.uid).child(
-            f'completed-' + 'community-levels' if self.type == 'community' else 'levels').get()
+            f'completed-' + ('community-levels' if self.type == 'community' else 'levels')).shallow().get()
+        print('Completed levels:' + str(self.complete_levels.val()))
         self._init_complete()
 
+
+
     def _init_complete(self):
+        print('complete levels')
         if self.levels.val() is None:
             return
         for level in self.levels.each():
             level.val()[
                 'complete'] = True if self.complete_levels.val() and level.key() in self.complete_levels.val() else False
+            print(level.val())
 
     def get_levels(self):
         return self.levels
