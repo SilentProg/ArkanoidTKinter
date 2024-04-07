@@ -15,6 +15,10 @@ class CampaignLevels(Levels):
     def __init__(self):
         super().__init__('levels')
 
+    def get_next_level(self):
+        for level in self.get_levels().each():
+            if not level.val()['complete']:
+                return level.val()
 
 class LevelsPage(MenuPage):
     levels: Levels = None
@@ -26,7 +30,7 @@ class LevelsPage(MenuPage):
 
     def _init_components(self):
         super()._init_components()
-        self.levels = None
+        self.levels: CampaignLevels = None
         self.list = ListView(self)
         self._update()
         self.list.pack(side=TOP, padx=5, pady=5)

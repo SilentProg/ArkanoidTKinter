@@ -453,7 +453,7 @@ class LevelInfoFrame(CTkFrame):
                                    command=self.board.restart)
         button_restart.grid(row=0, column=2, padx=10, pady=10)
 
-        self.level_label = CTkLabel(self, text=i18n.t('level-number', n=str(self.board.levels.getLevelNumber() + 1)),
+        self.level_label = CTkLabel(self, text=self.board.level_path['title'],
                                     font=self.level_font)
         self.level_label.grid(row=0, column=3, padx=10, pady=10)
 

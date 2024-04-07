@@ -7,7 +7,7 @@ from account_info import AccountInfo
 from admin_info import AdminInfo
 from community_levels_page import CommunityLevelsPage
 from custom_dialogs import ConfirmDialog
-from levels_page import LevelsPage
+from levels_page import LevelsPage, CampaignLevels
 from game_frame import GameBoard
 from level_editor import LevelEditor
 import firebase
@@ -139,15 +139,17 @@ class App(CTk):
             self.destroy()
 
     def startGame(self):
-        if self.game:
-            self.game.destroy()
-
-        level = self.levels_page.levels.last_level + 1
-        if level > len(self.levels_page.levels.levels):
-            level = self.levels_page.levels.last_level
-        self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
-                              height=self.app_height)
-        self.game.place(x=2, y=0)
+        self._show_levels()
+        self.levels_page.play(self.levels_page.levels.get_next_level())
+        # if self.game:
+        #     self.game.destroy()
+        #
+        # level = self.levels_page.levels.last_level + 1
+        # if level > len(self.levels_page.levels.levels):
+        #     level = self.levels_page.levels.last_level
+        # self.game = GameBoard(self, True, f'levels/level_{level}.json', width=self.app_width,
+        #                       height=self.app_height)
+        # self.game.place(x=2, y=0)
 
 
 def main():
