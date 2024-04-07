@@ -1,11 +1,19 @@
 from functools import partial
 
 import i18n
-from customtkinter import DISABLED, NORMAL, CTkScrollableFrame, X, BOTH, CTkButton
+from customtkinter import DISABLED, NORMAL, CTkScrollableFrame, X, BOTH, CTkButton, TOP
 
+import firebase
 from constants import APP_WIDTH, APP_HEIGHT
-from game_frame import Levels, GameBoard
+from custom_components import ListView, CommunityLevelItem
+from game_frame import GameBoard
 from menu_page import MenuPage
+from levels import Levels
+
+
+class CampaignLevels(Levels):
+    def __init__(self):
+        super().__init__('levels')
 
 
 class LevelsPage(MenuPage):
@@ -17,35 +25,32 @@ class LevelsPage(MenuPage):
 
     def _init_components(self):
         super()._init_components()
-        self.levels = Levels()
+        self.levels = None
+        self.list = ListView(self)
+        self._update()
+        self.list.pack(side=TOP, padx=5, pady=5)
 
-        levels_frame = CTkScrollableFrame(self, height=100)
-        levels_frame.pack(fill=X, padx=5, pady=5)
-
-        level_number = 1
-        row = 0
-        col = 0
-        for level in self.levels.levels:
-            state = NORMAL
-            color = 'green'
-            if level_number > self.levels.last_level + 1:
-                state = DISABLED
-                color = 'gray'
-            if level_number == self.levels.last_level + 1:
-                color = 'blue'
-            button = CTkButton(levels_frame, text=f"{level_number}", fg_color=color, width=55, height=55, state=state,
-                               font=self.button_font, command=partial(self.loadLevel, level_number))
-            button.grid(row=row, column=col, padx=5, pady=5)
-            level_number += 1
-            col += 1
-            if col > 2:
-                col = 0
-                row += 1
-
-    def loadLevel(self, level):
+    def play(self, level):
         if self.game:
             self.game.destroy()
 
-        self.game = GameBoard(self.master, True, f'levels/level_{level}.json', width=APP_WIDTH,
+        self.game = GameBoard(self.master, True, level, True, True, width=APP_WIDTH,
                               height=APP_HEIGHT)
+        self.game.set_on_return(self._update)
+
         self.game.place(x=2, y=0)
+
+    def _update(self):
+        self.levels = CampaignLevels()
+        self.list.clear()
+        # print("--- Community Levels ---")
+        for level in self.levels.get_levels().each():
+            # print(level.val())
+            val = level.val()
+            val['parent'] = self.levels.get_levels().key()
+            val['key'] = level.key()
+            item = CommunityLevelItem(self.list, val)
+            item.creator.pack_forget()
+            item.hp_counter.pack_forget()
+            item.set_on_play(partial(self.play, val))
+            self.list.add_item(item)

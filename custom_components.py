@@ -1,6 +1,6 @@
 import i18n
 import i18n_config
-from customtkinter import CTkScrollableFrame, CTkFrame, TOP, BOTH, CTkLabel, LEFT, CTkButton, RIGHT, CTkImage
+from customtkinter import CTkScrollableFrame, CTkFrame, TOP, BOTH, CTkLabel, LEFT, CTkButton, RIGHT, CTkImage, X
 from PIL import Image
 
 
@@ -62,7 +62,7 @@ class CommunityLevelItem(CTkFrame):
         super().__init__(master, **kwargs)
         self.level = level
         self.title_label = CTkLabel(self, text=level['title'], width=150, justify='left')
-        self.title_label.pack(side=LEFT, padx=10, pady=10)
+        self.title_label.pack(side=LEFT, fill=X, expand=True, padx=10, pady=10)
 
         self.creator = CTkLabel(self, text=level['creatorName'])
         self.creator.pack(side=LEFT, padx=10, pady=10)

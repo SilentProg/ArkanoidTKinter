@@ -31,6 +31,7 @@ class App(CTk):
     register_page: RegisterPage = None
     account_info: AccountInfo = None
     community_levels_page: CommunityLevelsPage = None
+    levels_page: LevelsPage = None
     admin_info: AdminInfo = None
     user = None
 
@@ -40,8 +41,6 @@ class App(CTk):
 
         self.login_page = LoginPage(self)
         self.register_page = RegisterPage(self)
-        self.levels_page = LevelsPage(self)
-        self.community_levels_page = None
         self.settings_page = SettingsPage(self)
 
         self.login_page.set_on_register(lambda: self.__show_page(self.register_page))
@@ -50,8 +49,6 @@ class App(CTk):
         self.register_page.set_on_login(lambda: self.__show_page(self.login_page))
 
         self.settings_page.set_on_back(self.backToMainMenu)
-        self.levels_page.set_on_back(self.backToMainMenu)
-
         self.mainMenuPage = MainMenuPage(self)
 
         if not self.login_page.check_session():
@@ -74,7 +71,7 @@ class App(CTk):
         self.user = user
 
         self.mainMenuPage.add_button(i18n.t('play'), self.startGame)
-        self.mainMenuPage.add_button(i18n.t('levels'), lambda: self.__show_page(self.levels_page))
+        self.mainMenuPage.add_button(i18n.t('levels'), self._show_levels)
         self.mainMenuPage.add_button(i18n.t('community-levels'), self._show_community_levels)
         self.mainMenuPage.add_button(i18n.t('level-editor'), lambda: LevelEditor())
         self.mainMenuPage.add_button(i18n.t('settings'), lambda: self.__show_page(self.settings_page))
@@ -91,6 +88,13 @@ class App(CTk):
         self.account_info.set_on_logout(self.logout)
         self.account_info.show()
         self.__show_page(self.mainMenuPage)
+
+    def _show_levels(self):
+        if self.levels_page:
+            self.levels_page.destroy()
+        self.levels_page = LevelsPage(self)
+        self.levels_page.set_on_back(self.backToMainMenu)
+        self.__show_page(self.levels_page)
 
     def _show_community_levels(self):
         if self.community_levels_page:
