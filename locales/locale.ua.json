@@ -40,6 +40,8 @@
     "restart-symbol": "↺",
     "hp-double-dot": "HP:",
     "hp-double-dot-number": "HP: %{hp}",
+    "v-hp-double-dot-number": "Витрачені HP: %{hp}",
+    "spent-time": "Час: %{time}c",
     "level-number": "Рівень: %{n}",
     "score-count": "Бали: %{n}",
     "new-level": "Новий рівень",

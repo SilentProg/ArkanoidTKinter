@@ -323,7 +323,8 @@ class GameBoard(CTkFrame):
 
             if isinstance(self.level_path, dict):
                 print(self.level_path)
-                firebase.db.child('users-data').child(firebase.auth.current_user['localId']).child('completed-'+self.level_path['parent']).child(self.level_path['key']).push(
+                firebase.db.child('users-data').child(firebase.auth.current_user['localId']).child(
+                    'completed-' + self.level_path['parent']).child(self.level_path['key']).push(
                     {
                         'date': datetime.now().isoformat(),
                         'score': self.points,
@@ -331,6 +332,14 @@ class GameBoard(CTkFrame):
                         'spent-hp': self.level_info_frame.max_hp - self.level_info_frame.hp
                     }
                 )
+                test = firebase.db.child('users-data').child(firebase.auth.current_user['localId']).child(
+                    'completed-' + self.level_path['parent']).child(self.level_path['key']).order_by_child(
+                    'time').limit_to_first(1).get().val()
+
+                test = test.get(list(test.keys())[0])
+                test['displayName'] = firebase.auth.current_user['displayName']
+                firebase.db.child('leaderboards').child(self.level_path['key']).child(firebase.auth.current_user['localId']).set(test)
+                # найти лучший результат и записать в бд лидербордов
                 self.after(1000, self.level_info_frame.returnToMenu)
             # self.levels.updateLastFromPath(self.level_path, self.points)
             # self.nextLevel()

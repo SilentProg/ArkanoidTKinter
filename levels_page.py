@@ -5,7 +5,7 @@ from customtkinter import DISABLED, NORMAL, CTkScrollableFrame, X, BOTH, CTkButt
 
 import firebase
 from constants import APP_WIDTH, APP_HEIGHT
-from custom_components import ListView, CommunityLevelItem
+from custom_components import ListView, CommunityLevelItem, LeaderBoard
 from game_frame import GameBoard
 from menu_page import MenuPage
 from levels import Levels
@@ -22,6 +22,7 @@ class LevelsPage(MenuPage):
 
     def __init__(self, master: any, **kwargs):
         super().__init__(master, i18n.t('levels'), True, **kwargs)
+        self.db = firebase.db
 
     def _init_components(self):
         super()._init_components()
@@ -39,6 +40,11 @@ class LevelsPage(MenuPage):
         self.game.set_on_return(self._update)
 
         self.game.place(x=2, y=0)
+
+    def show_leaderboard(self, level):
+        self.leaderboard = LeaderBoard(self.master, level)
+        self.leaderboard.grab_set()
+        self.leaderboard.show()
 
     def _update(self):
         self.levels = CampaignLevels()
@@ -62,4 +68,5 @@ class LevelsPage(MenuPage):
             item.creator.pack_forget()
             item.hp_counter.pack_forget()
             item.set_on_play(partial(self.play, val))
+            item.set_on_leaderboard(partial(self.show_leaderboard, val))
             self.list.add_item(item)

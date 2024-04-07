@@ -56,5 +56,12 @@ def restore_password(email: str, onerror=lambda e: print(e), onsuccess=lambda r:
 
 
 # sign_up('nice.savonik@gmail.com', 'gavno228', 'Silent')
+sign_in('nice.savonik@gmail.com', 'gavno228')
+
+test = db.child('users-data').child(auth.current_user['localId']).child(
+                    'completed-levels').child('-NujEGCi80QxitgmO5Jw').order_by_child('time').limit_to_first(1).get().val()
+print(list(test.keys())[0])
+print(test.get(list(test.keys())[0]))
+
 
 # restore_password('nice.savonik@gmail.com')

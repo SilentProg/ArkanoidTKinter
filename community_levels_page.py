@@ -2,7 +2,7 @@ from functools import partial
 import i18n
 from customtkinter import TOP
 from constants import APP_WIDTH, APP_HEIGHT
-from custom_components import ListView, CommunityLevelItem
+from custom_components import ListView, CommunityLevelItem, LeaderBoard
 from game_frame import GameBoard
 from menu_page import MenuPage
 from levels import Levels
@@ -33,6 +33,11 @@ class CommunityLevelsPage(MenuPage):
 
         self.game.place(x=2, y=0)
 
+    def show_leaderboard(self, level):
+        self.leaderboard = LeaderBoard(self.master, level)
+        self.leaderboard.grab_set()
+        self.leaderboard.show()
+
     def _update(self):
         self.levels = CommunityLevels()
         self.list.clear()
@@ -44,6 +49,7 @@ class CommunityLevelsPage(MenuPage):
             val['key'] = level.key()
             item = CommunityLevelItem(self.list, val)
             item.set_on_play(partial(self.play, val))
+            item.set_on_leaderboard(partial(self.show_leaderboard, val))
             self.list.add_item(item)
 
     def _init_components(self):

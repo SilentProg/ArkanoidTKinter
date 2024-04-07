@@ -18,8 +18,6 @@ class Levels:
         print('Completed levels:' + str(self.complete_levels.val()))
         self._init_complete()
 
-
-
     def _init_complete(self):
         print('complete levels')
         if self.levels.val() is None:
