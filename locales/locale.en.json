@@ -1,4 +1,7 @@
 {
+  "en": {
+
+  },
   "ua": {
     "game-title": "Arkanoid",
     "level-editor-title": "Arkanoid | Редактор рівнів",
@@ -91,6 +94,7 @@
     "permission-denied": "Ви не авторизовані",
     "press-to-play": "Натисніть Грати для початку",
     "creator-name": "Творець: %{creator}",
+    "language": "Мова",
     "private_color": "#75a95f",
     "public_color": "#de5226",
     "complete_color": "#c3e88d",

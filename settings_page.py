@@ -2,12 +2,21 @@ from functools import partial
 
 import i18n
 from customtkinter import CTkButton, CTkFrame, CTkLabel, CTkSlider, CTkCheckBox, X, LEFT, BOTH, CTkImage, IntVar, \
-    StringVar, CTkFont, RIGHT
+    StringVar, CTkFont, RIGHT, CTkComboBox, CTkOptionMenu
 
 import i18n_config
 from game_frame import Settings
 from menu_page import MenuPage
 from PIL import Image
+
+
+class Language:
+    def __init__(self, code, title):
+        self.code = code
+        self.title = title
+
+    def __str__(self):
+        return self.title
 
 
 class SettingsPage(MenuPage):
@@ -80,6 +89,14 @@ class SettingsPage(MenuPage):
         label_left = CTkLabel(frame_left, text=i18n.t('move-left'), font=self.button_font)
         label_left.pack(side=LEFT, fill=X, padx=5, pady=10)
 
+        label_language = CTkLabel(self.frame_control, text=i18n.t('language'), font=self.button_font)
+        label_language.pack(side=LEFT, fill=X, padx=5, pady=10)
+        languages = self.settings.getAllLanguages()
+
+        combobox = CTkOptionMenu(self.frame_control, values=list(languages.values()))
+        combobox.set(self.settings.getLanguage()['name']),
+        combobox.pack(side=RIGHT, fill=X, expand=True, padx=5, pady=10)
+
         frame_save = CTkFrame(self)
         frame_save.pack(fill=X, padx=5, pady=5)
 
@@ -88,7 +105,7 @@ class SettingsPage(MenuPage):
                                 height=self.elements_height,
                                 command=partial(self.onSaveSettings, self.slider_volume, self.check_mouse_control,
                                                 self.check_keyboard_control,
-                                                button_right, button_left))
+                                                button_right, button_left, combobox))
         save_button.pack(fill=X, padx=5, pady=5)
 
     def readKey(self, button: CTkButton):
@@ -100,12 +117,13 @@ class SettingsPage(MenuPage):
         self.master.unbind("<Key>")
 
     def onSaveSettings(self, volume: CTkSlider, mouse_control: CTkCheckBox, keyboard_control: CTkCheckBox,
-                       right: CTkButton, left: CTkButton):
+                       right: CTkButton, left: CTkButton, language: CTkOptionMenu):
         print(volume.get(), mouse_control.get(), keyboard_control.get(), right.cget("text"), left.cget("text"))
         self.settings.updateVolume(int(volume.get()))
         self.settings.updateMouseControl(mouse_control.get())
         self.settings.updateKeyboardControl(keyboard_control.get())
         self.settings.updateMoveRight(right.cget("text"))
         self.settings.updateMoveLeft(left.cget("text"))
+        self.settings.updateLanguage(language.get())
         self.show_result(i18n.t('saved'))
         print("Save")

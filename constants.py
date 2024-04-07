@@ -6,7 +6,7 @@ from custom_dialogs import InfoDialog
 APP_WIDTH = 1000
 APP_HEIGHT = 640
 ADMIN_EMAIL = 'arkanoid-admin@gmail.com'
-
+LOCALES_PATH = 'locales'
 
 def isAuth():
     return firebase.auth.current_user is not None

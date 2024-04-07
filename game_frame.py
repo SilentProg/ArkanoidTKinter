@@ -14,6 +14,7 @@ import re
 import firebase
 import i18n_config
 from LevelTimer import LevelTimer
+from constants import LOCALES_PATH
 from custom_dialogs import InfoDialog
 
 
@@ -338,7 +339,8 @@ class GameBoard(CTkFrame):
 
                 test = test.get(list(test.keys())[0])
                 test['displayName'] = firebase.auth.current_user['displayName']
-                firebase.db.child('leaderboards').child(self.level_path['key']).child(firebase.auth.current_user['localId']).set(test)
+                firebase.db.child('leaderboards').child(self.level_path['key']).child(
+                    firebase.auth.current_user['localId']).set(test)
                 # найти лучший результат и записать в бд лидербордов
                 self.after(1000, self.level_info_frame.returnToMenu)
             # self.levels.updateLastFromPath(self.level_path, self.points)
@@ -565,17 +567,26 @@ class Settings:
         if not os.path.exists('conf/settings.ini'):
             self.__config.add_section('Sounds')
             self.__config.add_section('Controls')
+            self.__config.add_section('Language')
             self.__config.set('Sounds', 'volume', str(100))
             self.__config.set('Controls', 'mouse', str(True))
             self.__config.set('Controls', 'keyboard', str(True))
             self.__config.set('Controls', 'move_right', 'Right')
             self.__config.set('Controls', 'move_left', 'Left')
+            self.__config.set('Language', 'default', 'ua')
             self.__reWrite()
         self.__config.read('conf/settings.ini')
 
     def __reWrite(self):
         with open('conf/settings.ini', 'w') as configfile:
             self.__config.write(configfile)
+
+    def updateLanguage(self, language: str):
+        for key, value in self.getAllLanguages().items():
+            if value == language:
+                self.__config.set('Language', 'default', key)
+                self.__reWrite()
+                break
 
     def updateVolume(self, volume: int):
         self.__config.set('Sounds', 'volume', str(volume))
@@ -599,6 +610,21 @@ class Settings:
 
     def getVolume(self):
         return int(self.__config.get("Sounds", 'volume'))
+
+    def getLanguage(self):
+        code = self.__config.get('Language', 'default')
+        return {'code': code, 'name': self.getAllLanguages()[code]}
+
+    def getAllLanguages(self):
+        from os import listdir
+        json_files = [file for file in listdir(LOCALES_PATH) if file.endswith('.json')]
+        languages = {}
+        for file in json_files:
+            split = file.split('.')
+            if len(split) != 3:
+                continue
+            languages[split[1]] = split[0]
+        return languages
 
     def getControlsType(self):
         mouse = False
