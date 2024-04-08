@@ -79,7 +79,6 @@ class App(CTk):
         if isAdmin():
             self.admin_info = AdminInfo(self)
             self.admin_info.show()
-            self.mainMenuPage.add_button(i18n.t('test'), lambda: print('test'))
 
         self.mainMenuPage.add_button(i18n.t('quit'), self.onExit)
         self.mainMenuPage.init_buttons()

@@ -46,7 +46,7 @@ class LevelEditor(CTkToplevel):
             self._init_levels(self.levels_tab)
             self._init_community_levels(self.community_tab)
 
-        if isAuth():
+        if isAuth() and not isAdmin():
             self.my_levels_tab = self.tab_view.add(i18n.t('my-levels'))
             self._init_my_levels(self.my_levels_tab)
 
