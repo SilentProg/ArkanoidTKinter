@@ -185,6 +185,9 @@ class LBControlPanel(CTkFrame):
         self.board.pause = True
         self.board.restart()
         self.updateAllObjs()
+        print(self.level['bricks'])
+        print(self.level['walls'])
+
 
         public = None
         if self.board.level_path and 'key' in self.board.level_path and 'parent' in self.board.level_path:

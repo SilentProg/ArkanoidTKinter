@@ -130,8 +130,8 @@ class GameBoard(CTkFrame):
             self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.level['carriage']['color'])
             self.canvas.itemconfigure(self.canvas.find_withtag('ball')[0], fill=self.level['ball']['color'])
 
-            self.loadItems(self.level.get('bricks', []), self.bricks)
-            self.loadItems(self.level.get('walls', []), self.walls)
+            self.loadItems(self.level.get('bricks', {}), self.bricks)
+            self.loadItems(self.level.get('walls', {}), self.walls)
 
         if self.level and not next_level:
             load()
@@ -170,9 +170,6 @@ class GameBoard(CTkFrame):
             self.restart(next_level=True)
 
     def loadItems(self, items: {}, array):
-        items = {index: value for index, value in enumerate(items) if value is not None} if isinstance(items,
-                                                                                                       list) else items
-
         items_keys = list(items.keys())
         print(type(items_keys))
         print(type(items))
@@ -453,7 +450,7 @@ class LevelInfoFrame(CTkFrame):
                                    command=self.board.restart)
         button_restart.grid(row=0, column=2, padx=10, pady=10)
 
-        self.level_label = CTkLabel(self, text=self.board.level_path['title'],
+        self.level_label = CTkLabel(self, text='' if self.board.level_path is None else self.board.level_path['title'],
                                     font=self.level_font)
         self.level_label.grid(row=0, column=3, padx=10, pady=10)
 
