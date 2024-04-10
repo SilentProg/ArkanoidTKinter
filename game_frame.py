@@ -14,7 +14,7 @@ import re
 import firebase
 import i18n_config
 from LevelTimer import LevelTimer
-from constants import LOCALES_PATH
+from constants import LOCALES_PATH, list_to_dict
 from custom_dialogs import InfoDialog
 
 
@@ -145,6 +145,9 @@ class GameBoard(CTkFrame):
                 print('File not found')
         elif self.level_path and isinstance(self.level_path, dict):
             self.level = self.level_path['level']
+            self.level['bricks'] = list_to_dict(self.level['bricks']) if isinstance(self.level["bricks"], list) else self.level['bricks']
+            self.level['walls'] = list_to_dict(self.level['walls']) if isinstance(self.level["walls"], list) else self.level['walls']
+
             load()
         else:
             if self.level:
@@ -170,12 +173,14 @@ class GameBoard(CTkFrame):
             self.restart(next_level=True)
 
     def loadItems(self, items: {}, array):
+        if isinstance(items, list):
+            items = {index: value for index, value in enumerate(items) if value is not None} if isinstance(items,
+                                                                                                       list) else items
+
         items_keys = list(items.keys())
-        print(type(items_keys))
-        print(type(items))
+        print("Items 1: ", items)
         for i in range(0, len(items_keys)):
             key = items_keys[i]
-            print(items[key])
             if items[key] == {}:
                 continue
             x1 = int(items[key]['x1'])
@@ -450,7 +455,7 @@ class LevelInfoFrame(CTkFrame):
                                    command=self.board.restart)
         button_restart.grid(row=0, column=2, padx=10, pady=10)
 
-        self.level_label = CTkLabel(self, text='' if self.board.level_path is None else self.board.level_path['title'],
+        self.level_label = CTkLabel(self, text=self.board.level_path['title'],
                                     font=self.level_font)
         self.level_label.grid(row=0, column=3, padx=10, pady=10)
 
