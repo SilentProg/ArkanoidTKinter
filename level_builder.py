@@ -33,7 +33,7 @@ class LBControlPanel(CTkFrame):
         self.wall_width = StringVar(value='100')
         self.wall_height = StringVar(value='40')
         self.button_try_reset_str = StringVar(value=i18n.t('try'))
-        self.option_menu_str = StringVar(value=board.hp)
+        self.option_menu_str = StringVar(value=i18n.t('hp-double-dot-number', hp=str(board.hp)))
         self.level: {} = board.level
         self.level_const: {} = board.level
         self.board = board
@@ -183,11 +183,8 @@ class LBControlPanel(CTkFrame):
 
     def saveLevel(self):
         self.board.pause = True
-        # self.board.restart()
+        self.board.restart()
         self.updateAllObjs()
-        print(self.level['bricks'])
-        print(self.level['walls'])
-
 
         public = None
         if self.board.level_path and 'key' in self.board.level_path and 'parent' in self.board.level_path:
@@ -222,7 +219,13 @@ class LBControlPanel(CTkFrame):
                 'level': self.level,
                 'public': public
             }
-            firebase.db.child('levels' if isAdmin() else 'community-levels').push(level_data)
+            key = firebase.db.generate_key()
+            parent = 'levels' if isAdmin() else 'community-levels'
+            firebase.db.child(parent).child(key).set(level_data)
+            if not isinstance(self.board.level_path, dict):
+                self.board.level_path = level_data
+            self.board.level_path['key'] = key
+            self.board.level_path['parent'] = parent
 
             InfoDialog({
                 'title': i18n.t('level-save'),

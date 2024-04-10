@@ -145,8 +145,10 @@ class GameBoard(CTkFrame):
                 print('File not found')
         elif self.level_path and isinstance(self.level_path, dict):
             self.level = self.level_path['level']
-            self.level['bricks'] = list_to_dict(self.level['bricks']) if isinstance(self.level["bricks"], list) else self.level['bricks']
-            self.level['walls'] = list_to_dict(self.level['walls']) if isinstance(self.level["walls"], list) else self.level['walls']
+            if 'bricks' in self.level_path:
+                self.level['bricks'] = list_to_dict(self.level['bricks']) if isinstance(self.level["bricks"], list) else self.level.get('bricks', {})
+            if 'walls' in self.level_path:
+                self.level['walls'] = list_to_dict(self.level['walls']) if isinstance(self.level["walls"], list) else self.level.get('walls', {})
 
             load()
         else:
@@ -455,7 +457,7 @@ class LevelInfoFrame(CTkFrame):
                                    command=self.board.restart)
         button_restart.grid(row=0, column=2, padx=10, pady=10)
 
-        self.level_label = CTkLabel(self, text=self.board.level_path['title'],
+        self.level_label = CTkLabel(self, text=self.board.level_path['title'] if self.board.level_path and 'title' in self.board.level_path else '',
                                     font=self.level_font)
         self.level_label.grid(row=0, column=3, padx=10, pady=10)
 

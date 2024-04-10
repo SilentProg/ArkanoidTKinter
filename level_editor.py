@@ -101,7 +101,8 @@ class LevelEditor(CTkToplevel):
             levels_list.add_item(level_item)
 
     def _toggle_visibility(self, btn: CTkButton, level: {}):
-        if not ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-toggle-visibility'), 'ok_text': i18n.t('yes')}).show():
+        if not ConfirmDialog({'title': i18n.t('confirmation'), 'message': i18n.t('ask-toggle-visibility'),
+                              'ok_text': i18n.t('yes')}).show():
             return
 
         firebase.db.child(level['parent']).child(level['key']).update({'public': not level['public']})
@@ -182,7 +183,6 @@ class LevelEditor(CTkToplevel):
             load()
 
     def _load_level(self, level):
-        # print(level)
         if self.current_page:
             self.current_page.destroy()
         if self.tab_view:
