@@ -183,7 +183,7 @@ class LBControlPanel(CTkFrame):
 
     def saveLevel(self):
         self.board.pause = True
-        self.board.restart()
+        # self.board.restart()
         self.updateAllObjs()
 
         public = None

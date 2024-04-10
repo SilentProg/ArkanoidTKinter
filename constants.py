@@ -8,6 +8,7 @@ APP_HEIGHT = 640
 ADMIN_EMAIL = 'arkanoid-admin@gmail.com'
 LOCALES_PATH = 'locales'
 
+
 def isAuth():
     return firebase.auth.current_user is not None
 
@@ -26,3 +27,7 @@ def centered_window(window, width, height, title, resizable):
     window.geometry(f"{width}x{height}+{x}+{y}")
     window.title(title)
     window.resizable(resizable, resizable)
+
+
+def list_to_dict(lst):
+    return {str(index): value for index, value in enumerate(lst) if value is not None}
