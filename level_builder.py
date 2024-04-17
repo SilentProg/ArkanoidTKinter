@@ -233,12 +233,13 @@ class LBControlPanel(CTkFrame):
             }).show()
 
     def addBrick(self):
-        print("block_added")
-        brick_w = 100
-        brick_h = 40
-        x1, y1, x2, y2 = self.calcPos(brick_w, brick_h)
+        brick_w = 100  # ширина блоку
+        brick_h = 40  # всиота блоку
+        x1, y1, x2, y2 = self.calcPos(brick_w, brick_h)   # вираховуємо початкову позицію
+        # створення прямокутника
         id_brick = self.canvas.create_rectangle(x1, y1, x2, y2, fill=self.current_color)
-        self.board.bricks.append(id_brick)
+        self.board.bricks.append(id_brick)   # додаємо новий блок до списку
+        # записуємо блок до словника рівня
         self.level['bricks'][str(id_brick)] = {
             'x1': x1,
             'y1': y1,
@@ -292,10 +293,11 @@ class LBControlPanel(CTkFrame):
             self.canvas.itemconfigure(self.canvas.find_withtag('carriage')[0], fill=self.carriage_color)
             self.level['carriage']['color'] = str(self.carriage_color)
 
+    #  метод оновлення блоку/стінки
     def updateObj(self, current_obj):
+        print("Current obj: {}".format(current_obj))
         if not current_obj:
             return
-        print("Current obj: {}".format(current_obj))
         print("Level obj: {}".format(self.level))
         x1, y1, x2, y2 = self.canvas.coords(current_obj)
         fill_color = self.canvas.itemcget(current_obj, 'fill')

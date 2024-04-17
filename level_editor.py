@@ -130,19 +130,23 @@ class LevelEditor(CTkToplevel):
                 {'title': i18n.t('confirmation'), 'message': i18n.t('ask-quit'), 'ok_text': i18n.t('yes')}).show():
             self.destroy()
 
+    # Метод створення нового рівня
     def newLevel(self):
-        def create():
-            self.tab_view.destroy()
-            self.current_page = LevelBuilder(self, width=self.app_width, height=self.app_height)
-            self.current_page.pack(fill=BOTH, expand=True)
+        def create():  # підметод для створення рівня
+            self.tab_view.destroy()  # прибираємо меню вибору рівня
+            self.current_page = LevelBuilder(self, width=self.app_width, height=self.app_height)  # створюємо вікно редактора
+            self.current_page.pack(fill=BOTH, expand=True)  # відображаємо вікно редактора
 
-        if self.current_page:
+        #  перевіряємо чи є відкритий рівень
+        if self.current_page: #  якщо є то запитуємо чи дійсно створити новий рівень
             answer = ConfirmDialog(
                 {'title': i18n.t('confirmation'), 'message': i18n.t('ask-new-level'), 'ok_text': i18n.t('yes')}).show()
             if answer:
+                #  яккщо користувач погодився створюємо рівень
                 self.current_page.destroy()
                 create()
         else:
+            #  створюємо пустий рівень
             create()
 
     def deleteLevel(self, level):
