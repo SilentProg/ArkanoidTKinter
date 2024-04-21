@@ -161,7 +161,8 @@ class LBControlPanel(CTkFrame):
             self.level_const = self.level
             self.button_try_reset_str.set(i18n.t('try'))
             self.board.restart()
-            self.board.togglePause()
+            if not self.board.pause:
+                self.board.togglePause()
 
     def show_context_menu(self, event):
         obj = self.canvas.find_withtag(CURRENT)
