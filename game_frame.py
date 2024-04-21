@@ -15,7 +15,7 @@ import firebase
 import i18n_config
 from LevelTimer import LevelTimer
 from constants import LOCALES_PATH, list_to_dict
-from custom_dialogs import InfoDialog
+from custom_dialogs import InfoDialog, ConfirmDialog
 
 
 class GameBoard(CTkFrame):
@@ -69,14 +69,16 @@ class GameBoard(CTkFrame):
             self.after(200, self.askPlay)
 
     def askPlay(self):
-        InfoDialog({
+        if ConfirmDialog({
             'title': i18n.t('level'),
             'message': i18n.t('press-to-play'),
             'ok_text': i18n.t('play')
-        }).show()
-        self.togglePause()
-        if not self.level_timer.isRunning():
-            self.level_timer.start_level()
+        }).show():
+            self.togglePause()
+            if not self.level_timer.isRunning():
+                self.level_timer.start_level()
+        else:
+            self.level_info_frame.returnToMenu()
 
     def togglePause(self):
         self.pause = not self.pause
@@ -92,10 +94,13 @@ class GameBoard(CTkFrame):
             self.canvas.unbind('<Motion>')
             self.level_timer.pause_level()
         else:
-            self.canvas.bind('<Key>', self.control)
-            self.canvas.bind('<KeyPress>', self.control)
-            self.canvas.bind('<KeyRelease>', self.control)
-            self.canvas.bind('<Motion>', self.motion)
+            mouse, keyboard = self.settings.getControlsType()
+            if keyboard:
+                self.canvas.bind('<Key>', self.control)
+                self.canvas.bind('<KeyPress>', self.control)
+                self.canvas.bind('<KeyRelease>', self.control)
+            if mouse:
+                self.canvas.bind('<Motion>', self.motion)
             if self.settings.getEffectsEnabled():
                 self.channel.play(self.countdown_sound)
                 while self.channel.get_busy():

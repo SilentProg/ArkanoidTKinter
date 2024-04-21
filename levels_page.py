@@ -19,6 +19,8 @@ class CampaignLevels(Levels):
         for level in self.get_levels().each():
             if not level.val()['complete']:
                 return level.val()
+        return self.get_levels().each()[-1].val()
+
 
 class LevelsPage(MenuPage):
     levels: Levels = None
