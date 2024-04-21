@@ -493,7 +493,6 @@ class LevelInfoFrame(CTkFrame):
     def reInit(self):
         self.setHp(self.max_hp)
         self.setScore(0)
-        self.setLevel(self.board.levels.getLevelNumber() + 1)
 
     def initHp(self):
         print(self.hp)

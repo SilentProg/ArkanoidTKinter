@@ -57,13 +57,17 @@ class App(CTk):
         self.register_page.set_on_success(self.regUser)
         self.register_page.set_on_login(lambda: self.__show_page(self.login_page))
 
-        self.settings_page.set_on_back(self.backToMainMenu)
+        self.settings_page.set_on_back(self.on_settings_back)
         self.mainMenuPage = MainMenuPage(self)
 
         if not self.login_page.check_session():
             self.__show_page(self.login_page)
 
         # print(f"User: {self.user}")
+
+    def on_settings_back(self):
+        self.backToMainMenu()
+        self.settings_page.error_frame.pack_forget()
 
     def initUI(self):
         screen_width = self.winfo_screenwidth()

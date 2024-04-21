@@ -140,11 +140,12 @@ class SettingsPage(MenuPage):
         self.settings.updateMoveLeft(left.cget("text"))
         self.settings.updateLanguage(language.get())
         self.settings.updateSoundsEffects(self.effects_enabled.get())
+        old_back = self.settings.getBackgroundEnabled()
         self.settings.updateSoundsBackground(self.background_enabled.get())
         self.show_result(i18n.t('saved'))
         pygame.mixer.music.set_volume(volume.get()/500)
         if self.background_enabled.get() == 'False':
             pygame.mixer.music.stop()
-        else:
+        elif not old_back:
             pygame.mixer.music.play(loops=-1)
         print("Save")
