@@ -59,7 +59,7 @@ class GameBoard(CTkFrame):
         self.level_failed_sound = pygame.mixer.Sound("assets/sounds/level_failed.mp3")
         self.level_confirm_sound = pygame.mixer.Sound("assets/sounds/level_confirm.mp3")
         self.pause = pause
-        self.ball_x, self.ball_y = self.size_w // 2, self.size_h - self.radius - 10
+        self.ball_x, self.ball_y = self.size_w // 2, self.size_h - self.radius - 15
         self.ball_vx, self.ball_vy = -5, -5
         self.showUi = show_ui
         self.level_timer = LevelTimer()
@@ -116,7 +116,7 @@ class GameBoard(CTkFrame):
         self.points = 0
         self.level_info_frame.reInit()
         self.ball_vx, self.ball_vy = -5, -5
-        self.ball_x, self.ball_y = self.size_w // 2, self.size_h - self.radius - 10
+        self.ball_x, self.ball_y = self.size_w // 2, self.size_h - self.radius - 15
         self.carriage_x = self.size_w // 2
         self.loadLevel(next_level)
         if not self.carriage_stop:
