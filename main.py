@@ -1,4 +1,6 @@
 import i18n
+import pygame
+
 import i18n_config
 from customtkinter import CTk, CTkFrame, END
 from tkinter.messagebox import askyesno as confirmation
@@ -8,7 +10,7 @@ from admin_info import AdminInfo
 from community_levels_page import CommunityLevelsPage
 from custom_dialogs import ConfirmDialog
 from levels_page import LevelsPage, CampaignLevels
-from game_frame import GameBoard
+from game_frame import GameBoard, Settings
 from level_editor import LevelEditor
 import firebase
 from login_page import LoginPage
@@ -38,7 +40,14 @@ class App(CTk):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.settings = Settings()
+        pygame.mixer.init()
+        pygame.mixer.music.load("assets/sounds/loop.mp3")
+        pygame.mixer.music.set_volume(self.settings.getVolume()/500)
+        if self.settings.getBackgroundEnabled():
+            self.after(200, lambda: pygame.mixer.music.play(loops=-1))
 
+        self.background_music = pygame.mixer.Sound("assets/sounds/loop.mp3")
         self.login_page = LoginPage(self)
         self.register_page = RegisterPage(self)
         self.settings_page = SettingsPage(self)

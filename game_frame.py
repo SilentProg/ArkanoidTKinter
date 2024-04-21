@@ -49,13 +49,15 @@ class GameBoard(CTkFrame):
         self.bricks = []
         self.walls = []
         self.settings = Settings()
-        self.levels = Levels()
-        pygame.mixer.init()
         self.channel = pygame.mixer.Channel(0)
-        self.channel.set_volume(self.settings.getVolume())
-        self.hit_sound = pygame.mixer.Sound("assets/sounds/hit_received.wav")
-        self.level_failed_sound = pygame.mixer.Sound("assets/sounds/level_failed.wav")
-        self.level_confirm_sound = pygame.mixer.Sound("assets/sounds/level_confirm.wav")
+        self.channel.set_volume(self.settings.getVolume() / 100)
+        if not self.settings.getEffectsEnabled():
+            self.channel.set_volume(0)
+        self.hit_sound = pygame.mixer.Sound("assets/sounds/hit_received.mp3")
+        self.collide_sound = pygame.mixer.Sound("assets/sounds/block_collide.mp3")
+        self.countdown_sound = pygame.mixer.Sound("assets/sounds/pause_countdown.mp3")
+        self.level_failed_sound = pygame.mixer.Sound("assets/sounds/level_failed.mp3")
+        self.level_confirm_sound = pygame.mixer.Sound("assets/sounds/level_confirm.mp3")
         self.pause = pause
         self.ball_x, self.ball_y = self.size_w // 2, self.size_h // 2
         self.ball_vx, self.ball_vy = -5, -5
@@ -94,6 +96,10 @@ class GameBoard(CTkFrame):
             self.canvas.bind('<KeyPress>', self.control)
             self.canvas.bind('<KeyRelease>', self.control)
             self.canvas.bind('<Motion>', self.motion)
+            if self.settings.getEffectsEnabled():
+                self.channel.play(self.countdown_sound)
+                while self.channel.get_busy():
+                    pygame.time.wait(100)
             self.level_timer.resume_level()
             self.ball_movement()
 
@@ -146,9 +152,13 @@ class GameBoard(CTkFrame):
         elif self.level_path and isinstance(self.level_path, dict):
             self.level = self.level_path['level']
             if 'bricks' in self.level_path:
-                self.level['bricks'] = list_to_dict(self.level['bricks']) if isinstance(self.level["bricks"], list) else self.level.get('bricks', {})
+                self.level['bricks'] = list_to_dict(self.level['bricks']) if isinstance(self.level["bricks"],
+                                                                                        list) else self.level.get(
+                    'bricks', {})
             if 'walls' in self.level_path:
-                self.level['walls'] = list_to_dict(self.level['walls']) if isinstance(self.level["walls"], list) else self.level.get('walls', {})
+                self.level['walls'] = list_to_dict(self.level['walls']) if isinstance(self.level["walls"],
+                                                                                      list) else self.level.get('walls',
+                                                                                                                {})
 
             load()
         else:
@@ -174,17 +184,20 @@ class GameBoard(CTkFrame):
             self.level_path = f"levels/level_{self.levels.getLevelNumber() + 1}.json"
             self.restart(next_level=True)
 
+    # метод завантаження блоків
     def loadItems(self, items: {}, array):
+        #  перетворюємо список у словник
         if isinstance(items, list):
             items = {index: value for index, value in enumerate(items) if value is not None} if isinstance(items,
-                                                                                                       list) else items
-
+                                                                                                           list) else items
         items_keys = list(items.keys())
-        print("Items 1: ", items)
+        # Проходимо по усім елементам словника
         for i in range(0, len(items_keys)):
             key = items_keys[i]
+            # Перевіряємо на пусте значення
             if items[key] == {}:
                 continue
+            # Отримуємо координати та кольори
             x1 = int(items[key]['x1'])
             y1 = int(items[key]['y1'])
             x2 = int(items[key]['x2'])
@@ -193,17 +206,12 @@ class GameBoard(CTkFrame):
             outline_color = 'white'
             if 'outline' in items[key]:
                 outline_color = items[key]['outline']
+            # створює об'єкт на ігровому полі
             id_item = self.canvas.create_rectangle(x1, y1, x2, y2, fill=fill_color, outline=outline_color)
-            items.pop(key)
-            items[str(id_item)] = {
-                'x1': x1,
-                'y1': y1,
-                'x2': x2,
-                'y2': y2,
-                'fill': fill_color,
-                'outline': outline_color
-            }
-            array.append(id_item)
+            items.pop(key)  # Вилучаємо зі списку
+            # додаємо із новим ключем
+            items[str(id_item)] = {'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2, 'fill': fill_color, 'outline': outline_color}
+            array.append(id_item)  # додаємо id до списку
 
     # def loadItems(self, items: [], array):
     #     print(items)
@@ -269,22 +277,25 @@ class GameBoard(CTkFrame):
                            self.ball_y + self.radius)
 
         if self.ball_y <= self.radius:
+            self.channel.play(self.collide_sound)
             self.ball_vy = abs(self.ball_vy)
         if self.ball_x <= self.radius or self.ball_x >= self.size_w - self.radius:
+            self.channel.play(self.collide_sound)
             self.ball_vx = -self.ball_vx
 
         carriage_x1, carriage_y1, carriage_x2, carriage_y2 = self.canvas.coords(self.carriage)
 
         if carriage_x1 <= self.ball_x <= carriage_x2 and self.ball_y == self.size_h - (self.radius + self.carriage_h):
+            self.channel.play(self.collide_sound)
             self.ball_vy = -self.ball_vy
             self.update_point()
 
         ball_x1, ball_y1, ball_x2, ball_y2 = self.canvas.coords(self.ball)
         overlap = self.canvas.find_overlapping(ball_x1, ball_y1, ball_x2, ball_y2)
-
+        # отримуємо координати м'яча
         ball_x1, ball_y1, ball_x2, ball_y2 = self.canvas.coords(self.ball)
         for ovr in overlap:
-            if ovr in self.walls:  # or ovr in self.bricks:
+            if ovr in self.walls:
                 rect_x1, rect_y1, rect_x2, rect_y2 = self.canvas.coords(ovr)
                 if (ball_x2 >= rect_x1 and ball_x1 <= rect_x2 and
                         ball_y2 >= rect_y1 and ball_y1 <= rect_y2):
@@ -304,6 +315,8 @@ class GameBoard(CTkFrame):
                     else:
                         print("Всередені")
                         self.ball_vx = -self.ball_vx
+
+                    self.channel.play(self.collide_sound)
                 else:
                     print("Немає зіткнення")
             # if ovr in self.bricks:
@@ -313,21 +326,22 @@ class GameBoard(CTkFrame):
 
         brick = self.crash_a_brick()
         if brick in self.bricks:
+            self.channel.play(self.collide_sound)
             self.ball_vy = -self.ball_vy
             self.canvas.delete(brick)
             self.bricks.pop(self.bricks.index(brick))
             self.update_point()
 
+        # якщо блоки закінчились
         if len(self.bricks) == 0:
+            # Виводимо інворацію про перемогу
             self.channel.play(self.level_confirm_sound)
             self.canvas.create_text(self.size_w // 2, self.size_h // 2, text=i18n.t('win'), fill='green',
                                     font=(None, 50))
             self.carriage_stop = False
-
             self.level_timer.end_level()
-
+            # готуємо дані для запису у БД
             if isinstance(self.level_path, dict):
-                print(self.level_path)
                 firebase.db.child('users-data').child(firebase.auth.current_user['localId']).child(
                     'completed-' + self.level_path['parent']).child(self.level_path['key']).push(
                     {
@@ -337,19 +351,17 @@ class GameBoard(CTkFrame):
                         'spent-hp': self.level_info_frame.max_hp - self.level_info_frame.hp
                     }
                 )
+                # знайти найкращій результат та записуємо до лідер бордів
                 test = firebase.db.child('users-data').child(firebase.auth.current_user['localId']).child(
                     'completed-' + self.level_path['parent']).child(self.level_path['key']).order_by_child(
                     'time').limit_to_first(1).get().val()
-
                 test = test.get(list(test.keys())[0])
                 test['displayName'] = firebase.auth.current_user['displayName']
+                # Записуємо результат у БД
                 firebase.db.child('leaderboards').child(self.level_path['key']).child(
                     firebase.auth.current_user['localId']).set(test)
-                # найти лучший результат и записать в бд лидербордов
+                # повертаємо до головного меню
                 self.after(1000, self.level_info_frame.returnToMenu)
-            # self.levels.updateLastFromPath(self.level_path, self.points)
-            # self.nextLevel()
-
             return
 
         if self.ball_y < (self.size_h - self.radius):
@@ -381,25 +393,34 @@ class GameBoard(CTkFrame):
         self.points += 1
         self.level_info_frame.setScore(self.points)
 
+    # метод керування ракеткою
     def control(self, event):
+        # отримання клавіш керування із налаштувань
         right, left = self.settings.getKeyboardKeys()
+        # Перевірка на паузу
         if self.pause:
             return
+        # отримуємо поточні координати ракетки
         x1, y1, x2, y2 = self.canvas.coords(self.carriage)
+        # Переміщуємо ракетку
         if event.keysym == left and x1 + 20 >= 0:
             self.carriage_x -= 10
         if event.keysym == right and x2 - 20 <= self.size_w:
             self.carriage_x += 10
-
+        # перевірка на подію припинення гри
         if self.carriage_stop:
             self.canvas.coords(self.carriage, self.carriage_x - self.carriage_w // 2, self.size_h,
                                self.carriage_x + self.carriage_w // 2, self.size_h - self.carriage_h)
 
+    # метод керування мишкою
     def motion(self, event):
+        # Перевірка на паузу
         if self.pause:
             return
+        # отримуємо координати мищі
         x, y = event.x, event.y
         self.carriage_x = x
+        # пересуваємо каретку
         x1 = self.carriage_x - self.carriage_w // 2
         x2 = self.carriage_x + self.carriage_w // 2
         if self.carriage_stop:
@@ -407,6 +428,7 @@ class GameBoard(CTkFrame):
                 self.canvas.coords(self.carriage, self.carriage_x - self.carriage_w // 2, self.size_h,
                                    self.carriage_x + self.carriage_w // 2, self.size_h - self.carriage_h)
 
+    # метод повернення
     def set_on_return(self, _update):
         self.on_return = _update
 
@@ -426,7 +448,6 @@ class LevelInfoFrame(CTkFrame):
         self.hp_broken_icon = Image.open('assets\\icons\\hp_broken.png')
         self.button_font = CTkFont(family="Helvetica", size=14, weight="bold")
         self.level_font = CTkFont(family="Helvetica", size=36, weight="bold")
-        self.menu_click_sound = pygame.mixer.Sound("assets/sounds/menu_click.wav")
         image = Image.open("assets/icons/pause.png")
         self.pause_icon = CTkImage(light_image=image, dark_image=image)
         image = Image.open("assets/icons/play.png")
@@ -457,7 +478,8 @@ class LevelInfoFrame(CTkFrame):
                                    command=self.board.restart)
         button_restart.grid(row=0, column=2, padx=10, pady=10)
 
-        self.level_label = CTkLabel(self, text=self.board.level_path['title'] if self.board.level_path and 'title' in self.board.level_path else '',
+        self.level_label = CTkLabel(self, text=self.board.level_path[
+            'title'] if self.board.level_path and 'title' in self.board.level_path else '',
                                     font=self.level_font)
         self.level_label.grid(row=0, column=3, padx=10, pady=10)
 
@@ -511,60 +533,6 @@ class LevelInfoFrame(CTkFrame):
         self.level_score.configure(text=i18n.t('score-count', n=str(score)))
 
 
-class Levels:
-    def __init__(self) -> None:
-        self.levels: []
-        self.last_level: int = -1
-        self.__config = configparser.ConfigParser()
-        self.__load_levels()
-
-    def updateLevels(self):
-        self.__load_levels()
-
-    def __load_levels(self):
-        if not os.path.exists('conf/player.ini'):
-            self.__config.add_section('Player')
-            self.__config.set('Player', 'level', '1')
-            self.__reWrite()
-        self.__config.read('conf/player.ini')
-        self.last_level = int(self.__config.get('Player', 'level'))
-        self.levels = [f for f in os.listdir('levels') if re.match(r'^level_\d+\.json$', f)]
-
-    def __reWrite(self):
-        with open('conf/player.ini', 'w') as configfile:
-            self.__config.write(configfile)
-
-    def getLevelNumber(self):
-        self.__load_levels()
-        return self.last_level
-
-    def __getLevelNumber(self, level_path):
-        start_index = level_path.find("_") + 1
-        end_index = level_path.find(".json")
-        number_str = level_path[start_index:end_index]
-        return int(number_str)
-
-    def updateLastFromPath(self, level_number: str, score: int):
-        level_number = self.__getLevelNumber(level_number)
-        self.updateLast(level_number, score)
-
-    def updateLast(self, level_number: int, score: int):
-        last = int(self.__config.get('Player', 'level'))
-        if level_number > last:
-            self.last_level = level_number
-            self.__config.set('Player', 'level', str(level_number))
-        level = f'{level_number}'
-        try:
-            sc = int(self.__config.get(level, 'score'))
-            if sc < score:
-                self.__config.set(level, 'score', str(score))
-        except:
-            self.__config.add_section(level)
-            self.__config.set(level, 'score', str(score))
-            self.__config.set(level, 'confirm', '1')
-        self.__reWrite()
-
-
 class Settings:
     def __init__(self) -> None:
         self.__config = configparser.ConfigParser()
@@ -573,6 +541,8 @@ class Settings:
             self.__config.add_section('Controls')
             self.__config.add_section('Language')
             self.__config.set('Sounds', 'volume', str(100))
+            self.__config.set('Sounds', 'effects', str(True))
+            self.__config.set('Sounds', 'background', str(True))
             self.__config.set('Controls', 'mouse', str(True))
             self.__config.set('Controls', 'keyboard', str(True))
             self.__config.set('Controls', 'move_right', 'Right')
@@ -596,6 +566,14 @@ class Settings:
         self.__config.set('Sounds', 'volume', str(volume))
         self.__reWrite()
 
+    def updateSoundsEffects(self, enabled: bool):
+        self.__config.set('Sounds', 'effects', str(enabled))
+        self.__reWrite()
+
+    def updateSoundsBackground(self, enabled: bool):
+        self.__config.set('Sounds', 'background', str(enabled))
+        self.__reWrite()
+
     def updateMouseControl(self, mouse_control):
         self.__config.set('Controls', 'mouse', mouse_control)
         self.__reWrite()
@@ -614,6 +592,26 @@ class Settings:
 
     def getVolume(self):
         return int(self.__config.get("Sounds", 'volume'))
+
+    def getEffectsEnabled(self):
+        return self.__config.get("Sounds", 'effects') == 'True'
+
+    def getBackgroundEnabled(self):
+        return self.__config.get("Sounds", 'background') == 'True'
+
+    def getSounds(self):
+        effects = False
+        background = False
+
+        try:
+            effects = self.__config.get("Sounds", 'effects') == 'True'
+            background = self.__config.get("Sounds", 'background') == 'True'
+        except:
+            self.updateSoundsBackground(True)
+            self.updateSoundsEffects(True)
+            return True, True
+
+        return effects, background
 
     def getLanguage(self):
         code = self.__config.get('Language', 'default')

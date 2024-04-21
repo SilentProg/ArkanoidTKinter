@@ -1,21 +1,21 @@
 import firebase
 
-
+# Клас Рівнів
 class Levels:
     def __init__(self, level_type: str):
-        self.type = level_type
-        self.db = firebase.db
-        self.auth = firebase.auth
-        self.uid = self.auth.current_user['localId']
-        self.levels = None
+        self.type = level_type  # Тип рівнів
+        self.db = firebase.db  # Отримуємо посилання на БД
+        self.auth = firebase.auth  # Отримуємо посилання на сервіс авторизації
+        self.uid = self.auth.current_user['localId']  # отримуємо Id поточного гравця
+        self.levels = None  # ініціалізовуємо зміну рівнів
+        # Отримуємо рівні згідно отриманого типу
         if self.type == 'community':
             self.levels = self.db.child('community-levels').order_by_child('public').equal_to(True).get()
         else:
             self.levels = self.db.child('levels').get()
-
-        self.complete_levels = self.db.child('users-data').child(self.uid).child(
-            f'completed-' + ('community-levels' if self.type == 'community' else 'levels')).shallow().get()
-        print('Completed levels:' + str(self.complete_levels.val()))
+        # Отримуємо завершені рівні гравця
+        self.complete_levels = self.db.child('users-data').child(self.uid).child(f'completed-' + ('community-levels' if self.type == 'community' else 'levels')).shallow().get()
+        # Ініціалізовуємо пройдені рівні
         self._init_complete()
 
     def _init_complete(self):

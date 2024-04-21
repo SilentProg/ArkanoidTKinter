@@ -181,22 +181,18 @@ class LBControlPanel(CTkFrame):
                 del self.level['walls'][str(self.current_object)]
             self.current_object = None
 
+    # Метод збереення рівня
     def saveLevel(self):
-        self.board.pause = True
-        self.board.restart()
-        self.updateAllObjs()
-
+        self.board.pause = True  # Ставимо паузу
+        self.board.restart()  # перезапускаємо рівень
+        self.updateAllObjs()  # оновлюємо дані рівня
         public = None
+        # перевіряємо дані на правельність і на необхідні ключі
         if self.board.level_path and 'key' in self.board.level_path and 'parent' in self.board.level_path:
-            firebase.db.child(self.board.level_path['parent']).child(self.board.level_path['key']).update({
-                'level': self.level
-            })
-            InfoDialog({
-                'title': i18n.t('level-save'),
-                'message': i18n.t('level-saved')
-            }).show()
+            firebase.db.child(self.board.level_path['parent']).child(self.board.level_path['key']).update({'level': self.level})
+            InfoDialog({'title': i18n.t('level-save'), 'message': i18n.t('level-saved')}).show()
             return
-
+        # Запитуємо назву рівня для першого збереження дані до запису
         if isAdmin():
             file_name = PromptDialog({'title': i18n.t('level-save'),
                                       'entry_prompt': i18n.t('ask-level-title'),
@@ -210,17 +206,12 @@ class LBControlPanel(CTkFrame):
                                         ).show()
             file_name = result['entry_value']
             public = result['switch_value']
-
+        # готоємо дані до збереження
         if file_name:
-            level_data = {
-                'creatorName': firebase.auth.current_user['displayName'],
-                'creatorLocalId': firebase.auth.current_user['localId'],
-                'title': file_name,
-                'level': self.level,
-                'public': public
-            }
+            level_data = {'creatorName': firebase.auth.current_user['displayName'], 'creatorLocalId': firebase.auth.current_user['localId'], 'title': file_name, 'level': self.level, 'public': public}
             key = firebase.db.generate_key()
             parent = 'levels' if isAdmin() else 'community-levels'
+            # Записуємо дані до бази
             firebase.db.child(parent).child(key).set(level_data)
             if not isinstance(self.board.level_path, dict):
                 self.board.level_path = level_data
@@ -235,10 +226,10 @@ class LBControlPanel(CTkFrame):
     def addBrick(self):
         brick_w = 100  # ширина блоку
         brick_h = 40  # всиота блоку
-        x1, y1, x2, y2 = self.calcPos(brick_w, brick_h)   # вираховуємо початкову позицію
+        x1, y1, x2, y2 = self.calcPos(brick_w, brick_h)  # вираховуємо початкову позицію
         # створення прямокутника
         id_brick = self.canvas.create_rectangle(x1, y1, x2, y2, fill=self.current_color)
-        self.board.bricks.append(id_brick)   # додаємо новий блок до списку
+        self.board.bricks.append(id_brick)  # додаємо новий блок до списку
         # записуємо блок до словника рівня
         self.level['bricks'][str(id_brick)] = {
             'x1': x1,

@@ -57,21 +57,21 @@ class RegisterPage(MenuPage):
                                         font=CTkFont(family="Helvetica", size=14, weight="bold"))
         self.sign_up_button.pack(padx=20, pady=10)
 
+    # Метод реєстрації
     def sign_up(self):
-        self.error_frame.pack_forget()
-        username = self.username_entry.get()
-        email = self.email_entry.get()
-        password = self.password_entry.get()
-        password_confirm = self.password_confirm_entry.get()
-
+        self.error_frame.pack_forget()  # прибираємо помилку
+        username = self.username_entry.get()  # отримуємо nickname
+        email = self.email_entry.get()  # отримуємо email
+        password = self.password_entry.get()  # отримуємо пароль
+        password_confirm = self.password_confirm_entry.get()  # отримуємо пароль підтвердження
+        # перевіряємо дані
         if username == '' or email == '' or password == '' or password_confirm == '':
             self.show_error(i18n.t('MISSING_DATA'))
             return
-
         if password != password_confirm:
             self.show_error(i18n.t('PASSWORD_MISMATCH'))
             return
-
+        # Реєструємо користувача
         firebase.sign_up(email, password, username,
                          onerror=lambda e: self.show_error(e),
                          onsuccess=self.on_success)

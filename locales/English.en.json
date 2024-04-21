@@ -95,6 +95,8 @@
     "private_color": "#75a95f",
     "public_color": "#de5226",
     "complete_color": "#c3e88d",
-    "disable_color": "#363b3e"
+    "disable_color": "#363b3e",
+    "effects": "Sound effects",
+    "background": "Background music"
   }
 }

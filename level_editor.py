@@ -158,6 +158,8 @@ class LevelEditor(CTkToplevel):
         return answer
 
     def openChooser(self):
+        if not self.current_page:
+            return 
         if self.current_page and not ConfirmDialog(
                 {'title': i18n.t('confirmation'), 'message': i18n.t('ask-load-level'),
                  'ok_text': i18n.t('yes')}).show():

@@ -1,6 +1,7 @@
 from functools import partial
 
 import i18n
+import pygame
 from customtkinter import CTkButton, CTkFrame, CTkLabel, CTkSlider, CTkCheckBox, X, LEFT, BOTH, CTkImage, IntVar, \
     StringVar, CTkFont, RIGHT, CTkComboBox, CTkOptionMenu
 
@@ -53,8 +54,21 @@ class SettingsPage(MenuPage):
         self.frame_control.pack(fill=X, padx=5, pady=5)
 
         mouse, keyboard = self.settings.getControlsType()
+        effects, background = self.settings.getSounds()
         self.mouse_control = StringVar(value=str(mouse))
         self.keyboard_control = StringVar(value=str(keyboard))
+        self.effects_enabled = StringVar(value=str(effects))
+        self.background_enabled = StringVar(value=str(background))
+
+        self.check_effects = CTkCheckBox(self.frame_control, font=self.button_font,
+                                         text=i18n.t("effects"),
+                                         variable=self.effects_enabled, onvalue="True", offvalue="False")
+        self.check_effects.pack(fill=X, padx=5, pady=5)
+        self.check_background = CTkCheckBox(self.frame_control, font=self.button_font,
+                                            text=i18n.t("background"),
+                                            variable=self.background_enabled, onvalue="True", offvalue="False")
+        self.check_background.pack(fill=X, padx=5, pady=5)
+
         self.check_mouse_control = CTkCheckBox(self.frame_control, font=self.button_font, text=i18n.t("mouse-control"),
                                                variable=self.mouse_control, onvalue="True", offvalue="False")
         if not self.mouse_control:
@@ -125,5 +139,12 @@ class SettingsPage(MenuPage):
         self.settings.updateMoveRight(right.cget("text"))
         self.settings.updateMoveLeft(left.cget("text"))
         self.settings.updateLanguage(language.get())
+        self.settings.updateSoundsEffects(self.effects_enabled.get())
+        self.settings.updateSoundsBackground(self.background_enabled.get())
         self.show_result(i18n.t('saved'))
+        pygame.mixer.music.set_volume(volume.get()/500)
+        if self.background_enabled.get() == 'False':
+            pygame.mixer.music.stop()
+        else:
+            pygame.mixer.music.play(loops=-1)
         print("Save")

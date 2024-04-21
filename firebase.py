@@ -21,25 +21,32 @@ storage = firebaseApp.storage()
 auth = firebaseApp.auth()
 
 
+# Метод реєстрації
 def sign_up(email, password, username, onerror=lambda e: print(e), onsuccess=lambda user: print(user)):
     try:
+        # реєструємо гравця
         user = auth.create_user_with_email_and_password(email, password)
         auth.update_profile(id_token=user['idToken'], display_name=username)
+    # У разі помилки повертаємо помилку
     except HTTPError as e:
         onerror(i18n.t(json.loads(e.strerror)['error']['message']))
     except Exception as e:
         onerror(i18n.t('ERROR') + "\t" + str(e))
+    # У разі успіху повераємо користувача
     else:
         onsuccess(user)
 
-
+# Метод авторизації
 def sign_in(email, password, onerror=lambda e: print(e), onsuccess=lambda user: print(user)):
     try:
+        # авторизовуємо
         user = auth.sign_in_with_email_and_password(email, password)
+    # У разі помилки повертаємо помилку
     except HTTPError as e:
         onerror(i18n.t(json.loads(e.strerror)['error']['message']))
     except Exception as e:
         onerror(i18n.t('ERROR') + "\t" + str(e))
+    # У разі успіху повераємо користувача
     else:
         onsuccess(user)
 
@@ -59,9 +66,8 @@ def restore_password(email: str, onerror=lambda e: print(e), onsuccess=lambda r:
 sign_in('nice.savonik@gmail.com', 'gavno228')
 
 test = db.child('users-data').child(auth.current_user['localId']).child(
-                    'completed-levels').child('-NujEGCi80QxitgmO5Jw').order_by_child('time').limit_to_first(1).get().val()
+    'completed-levels').child('-NujEGCi80QxitgmO5Jw').order_by_child('time').limit_to_first(1).get().val()
 print(list(test.keys())[0])
 print(test.get(list(test.keys())[0]))
-
 
 # restore_password('nice.savonik@gmail.com')
