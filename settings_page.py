@@ -148,4 +148,5 @@ class SettingsPage(MenuPage):
             pygame.mixer.music.stop()
         elif not old_back:
             pygame.mixer.music.play(loops=-1)
+        i18n.set('locale', Settings().getLanguage()['code'])
         print("Save")
